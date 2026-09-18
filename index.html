@@ -380,6 +380,7 @@
         <button id="btnSelectDir" style="font-size: 13px; padding: 6px 12px; white-space: nowrap;">Select
           Folder</button>
         <input type="file" id="fallbackDirInput" webkitdirectory directory multiple style="display: none;" />
+        <input type="file" id="restoreZipInput" accept=".zip,application/zip" style="display: none;" />
       </div>
     </div>
     <ul class="pc-file-list" id="pcList">
@@ -440,6 +441,7 @@
     // Selected virtual file tracking
     let selectedVirtualFiles = [];
     let transferBusy = false;
+    let localFiles = {};
 
     function showXfer(title, detail, pct) {
       const bar = document.getElementById('xferBar');
@@ -531,7 +533,7 @@
         }
       });
       if (writeChar) {
-        requestList(driveNum);
+        if (!transferBusy) requestList(driveNum);
         diskControls.style.display = 'flex';
         controlDriveTitle.innerText = `Virtual DISK ${driveNum} Commands`;
         selectedVirtualFiles = []; // Reset selection on switch
@@ -598,137 +600,244 @@
       diskControls.style.display = 'none';
       writeChar = null;
       notifyChar = null;
+      isDownloading = false;
+      downloadBuffer = null;
+      if (pendingList) {
+        const p = pendingList;
+        pendingList = null;
+        p.reject(new Error('Disconnected'));
+      }
+      if (pendingDownload) {
+        const p = pendingDownload;
+        pendingDownload = null;
+        p.reject(new Error('Disconnected'));
+      }
+      hideXfer();
     }
 
     // --- BLE Communication ---
 
-    // Receiving data from nRF (Directory Listing or Binary Download)
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
     let rxBuffer = "";
     let isDownloading = false;
     let downloadFileName = "";
     let downloadSize = 0;
     let downloadBuffer = null;
     let downloadCursor = 0;
+    let pendingList = null;
+    let pendingDownload = null;
+    let downloadProgressLabel = '';
 
-    async function handleNotifications(event) {
+    function finishDownloadStream() {
+      isDownloading = false;
+      const bytes = downloadBuffer ? downloadBuffer.slice(0, downloadCursor) : new Uint8Array(0);
+      downloadBuffer = null;
+      downloadFileName = "";
+      downloadCursor = 0;
+      downloadSize = 0;
+      if (pendingDownload) {
+        const p = pendingDownload;
+        pendingDownload = null;
+        p.resolve(bytes);
+      }
+      return bytes;
+    }
+
+    function handleNotifications(event) {
       if (isDownloading) {
-        // Binary Stream Capture Mode
         const data = new Uint8Array(event.target.value.buffer);
-
-        let eofCheck = new TextDecoder().decode(data);
-          if (eofCheck.includes('\nEOF:')) {
-          // Stream Complete
-          console.log(`Finished receiving ${downloadFileName}. Dumping to file...`);
-          isDownloading = false;
-          showXfer(`Saving ${downloadFileName}`, 'Choose where to save…', 100);
-          await saveDownloadToFile();
-          hideXfer();
+        const eofCheck = new TextDecoder().decode(data);
+        if (eofCheck.includes('\nEOF:')) {
+          console.log(`Finished receiving ${downloadFileName}`);
+          finishDownloadStream();
           return;
         }
-
-        // Just blindly accumulator payload chunks
         if (downloadBuffer) {
+          if (downloadCursor + data.length > downloadBuffer.length) {
+            const grown = new Uint8Array(downloadCursor + data.length);
+            grown.set(downloadBuffer.subarray(0, downloadCursor), 0);
+            downloadBuffer = grown;
+          }
           downloadBuffer.set(data, downloadCursor);
           downloadCursor += data.length;
           const pct = downloadSize ? Math.floor((downloadCursor / downloadSize) * 100) : 0;
-          showXfer(`Copying ${downloadFileName} to PC`,
-            `${downloadCursor} / ${downloadSize} bytes`, pct);
+          const title = downloadProgressLabel || `Copying ${downloadFileName} to PC`;
+          showXfer(title, `${downloadCursor} / ${downloadSize} bytes`, pct);
         }
         return;
       }
 
-      // ASCII Text Parsing Mode (Directory Lists & Headers)
-      const value = event.target.value;
-      const str = new TextDecoder().decode(value);
+      const str = new TextDecoder().decode(event.target.value);
       rxBuffer += str;
 
       if (rxBuffer.includes('\n')) {
         const lines = rxBuffer.split('\n');
-        rxBuffer = lines.pop(); // Keep partial line
+        rxBuffer = lines.pop();
 
         for (let line of lines) {
           line = line.trim();
           if (line.startsWith('L:')) {
-            // L:1:FILE.DO:1200
             const parts = line.split(':');
             if (parts.length >= 4) {
-              addFileToList(parts[1], parts[2], parts[3]);
+              const drive = parts[1];
+              const name = parts[2];
+              const size = parseInt(parts[3] || '0', 10);
+              addFileToList(drive, name, parts[3]);
+              if (pendingList) pendingList.files.push({ name, size });
             }
           } else if (line.startsWith('CLR:')) {
             const drive = line.split(':')[1];
             if (drive) document.getElementById(`list-${drive}`).innerHTML = '';
           } else if (line.startsWith('G:')) {
-            // Incoming Download Header Setup (e.g. G:1:FILE.CO:2400)
             const parts = line.split(':');
             downloadFileName = parts[2];
-            downloadSize = parseInt(parts[3] || 0);
-            downloadBuffer = new Uint8Array(downloadSize);
+            downloadSize = parseInt(parts[3] || '0', 10);
+            downloadBuffer = new Uint8Array(Math.max(downloadSize, 0));
             downloadCursor = 0;
             isDownloading = true;
             console.log(`Incoming stream for ${downloadFileName} (${downloadSize} bytes)...`);
-            showXfer(`Copying ${downloadFileName} to PC`, `0 / ${downloadSize} bytes`, 0);
+            const title = downloadProgressLabel || `Copying ${downloadFileName} to PC`;
+            showXfer(title, `0 / ${downloadSize} bytes`, 0);
           } else if (line === 'END') {
-            const list = document.getElementById(`list-${activeDrive}`);
-            if (list.innerHTML.includes('Loading...')) {
+            const drive = pendingList ? pendingList.drive : activeDrive;
+            const list = document.getElementById(`list-${drive}`);
+            if (list && list.innerHTML.includes('Loading...')) {
               list.innerHTML = '<li><i>EMPTY.....</i></li>';
+            }
+            if (pendingList) {
+              const p = pendingList;
+              pendingList = null;
+              p.resolve(p.files);
             }
           }
         }
       }
     }
 
-    async function saveDownloadToFile() {
+    async function listVirtualFiles(driveNum) {
+      if (!writeChar) throw new Error('Not connected');
+      if (pendingList) throw new Error('A directory listing is already in progress');
+      document.getElementById(`list-${driveNum}`).innerHTML = '<li><i>Loading...</i></li>';
+      diskStats[driveNum] = { files: 0, bytes: 0 };
+      updateDiskStatsUI(driveNum);
+
+      const files = [];
+      const listed = new Promise((resolve, reject) => {
+        const t = setTimeout(() => {
+          if (pendingList) {
+            pendingList = null;
+            reject(new Error('LIST timed out'));
+          }
+        }, 20000);
+        pendingList = {
+          drive: driveNum,
+          files,
+          resolve: (v) => { clearTimeout(t); resolve(v); },
+          reject: (e) => { clearTimeout(t); reject(e); }
+        };
+      });
+      await writeChar.writeValueWithoutResponse(new TextEncoder().encode(`LIST:${driveNum}\n`));
+      return listed;
+    }
+
+    async function downloadVirtualFile(driveNum, filename, progressTitle) {
+      if (!writeChar) throw new Error('Not connected');
+      if (pendingDownload) throw new Error('A download is already in progress');
+      downloadProgressLabel = progressTitle || `Copying ${filename} to PC`;
+      const got = new Promise((resolve, reject) => {
+        const t = setTimeout(() => {
+          isDownloading = false;
+          downloadBuffer = null;
+          if (pendingDownload) {
+            pendingDownload = null;
+            reject(new Error('GET timed out'));
+          }
+        }, 120000);
+        pendingDownload = {
+          resolve: (v) => { clearTimeout(t); resolve(v); },
+          reject: (e) => { clearTimeout(t); reject(e); }
+        };
+      });
+      await writeChar.writeValueWithoutResponse(
+        new TextEncoder().encode(`GET:${driveNum}:${filename}\n`));
       try {
-        // Prompt user to save the explicitly downloaded file
-        const options = {
-          suggestedName: downloadFileName,
+        return await got;
+      } finally {
+        downloadProgressLabel = '';
+      }
+    }
+
+    async function saveBytesToFile(filename, bytes) {
+      const blob = new Blob([bytes]);
+      try {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: filename,
           types: [{
             description: 'Model 100 File',
             accept: { 'application/octet-stream': ['.do', '.co', '.ba'] },
           }],
-        };
-        const handle = await window.showSaveFilePicker(options);
-        const writable = await handle.createWritable();
-
-        // We only write up to the exact received cursor in case size was slightly off
-        const finalChunk = downloadBuffer.subarray(0, downloadCursor);
-        await writable.write(finalChunk);
-        await writable.close();
-
-        // Auto-refresh the PC UI list dynamically so they don't have to rescan
-        const pcList = document.getElementById('pcList');
-        // Clear "empty" message if it exists
-        if (pcList.innerHTML.includes('No top-level files') || pcList.innerHTML.includes('Folder is empty') || pcList.innerHTML.includes('No folder selected')) {
-          pcList.innerHTML = '';
-        }
-
-        // Cache the handle so you can immediately drag it back up to a virtual disk!
-        localFiles[downloadFileName] = handle;
-
-        // Check if file already exists in UI to avoid duplicates
-        let exists = false;
-        Array.from(pcList.children).forEach(li => {
-          if (li.innerText.includes(downloadFileName)) exists = true;
         });
-        if (!exists) {
-          const li = document.createElement('li');
-          li.draggable = true;
-          li.innerHTML = `<span>&#128196; ${downloadFileName}</span><span>PC File (Saved)</span>`;
-          li.ondragstart = (ev) => {
-            ev.dataTransfer.setData('text/plain', downloadFileName);
-            ev.dataTransfer.effectAllowed = 'copy';
-          };
-          pcList.appendChild(li);
-        }
-        alert(`Successfully saved ${downloadFileName} to your computer!`);
+        const writable = await handle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        localFiles[filename] = new File([bytes], filename);
+        addPcListEntry(filename, 'PC File (Saved)');
       } catch (err) {
-        console.error("Save failed or cancelled by user:", err);
+        if (err && err.name === 'AbortError') return;
+        console.warn('Save picker unavailable, using download link:', err);
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 2000);
       }
+    }
 
-      // Cleanup Global Refs
-      downloadBuffer = null;
-      downloadFileName = "";
-      downloadCursor = 0;
+    async function saveBlobAs(suggestedName, blob, mimeExt) {
+      try {
+        const handle = await window.showSaveFilePicker({
+          suggestedName,
+          types: [{
+            description: 'AirDrive backup',
+            accept: { [mimeExt || 'application/zip']: ['.zip'] },
+          }],
+        });
+        const writable = await handle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+      } catch (err) {
+        if (err && err.name === 'AbortError') return false;
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = suggestedName;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      }
+      return true;
+    }
+
+    function addPcListEntry(name, label) {
+      const pcList = document.getElementById('pcList');
+      if (pcList.innerHTML.includes('No top-level files') ||
+          pcList.innerHTML.includes('Folder is empty') ||
+          pcList.innerHTML.includes('No folder selected')) {
+        pcList.innerHTML = '';
+      }
+      let exists = false;
+      Array.from(pcList.children).forEach(li => {
+        if (li.innerText.includes(name)) exists = true;
+      });
+      if (!exists) {
+        const li = document.createElement('li');
+        li.draggable = true;
+        li.innerHTML = `<span>&#128196; ${name}</span><span>${label}</span>`;
+        li.ondragstart = (ev) => {
+          ev.dataTransfer.setData('text/plain', name);
+          ev.dataTransfer.effectAllowed = 'copy';
+        };
+        pcList.appendChild(li);
+      }
     }
 
     function addFileToList(driveNum, filename, size) {
@@ -774,17 +883,17 @@
 
     async function requestList(driveNum) {
       if (!writeChar) return;
-      document.getElementById(`list-${driveNum}`).innerHTML = '<li><i>Loading...</i></li>';
-      // Reset stats cleanly before pulling the new listing
-      diskStats[driveNum] = { files: 0, bytes: 0 };
-      updateDiskStatsUI(driveNum);
-
-      const cmd = `LIST:${driveNum}\n`;
-      const enc = new TextEncoder().encode(cmd);
-      await writeChar.writeValueWithoutResponse(enc);
+      try {
+        await listVirtualFiles(driveNum);
+      } catch (err) {
+        console.error('LIST failed:', err);
+      }
     }
 
-    btnRefresh.onclick = () => requestList(activeDrive);
+    btnRefresh.onclick = () => {
+      if (transferBusy) return;
+      requestList(activeDrive);
+    };
 
     // --- Virtual Disk Commands ---
     document.getElementById('btnCopyPC').onclick = async () => {
@@ -792,28 +901,21 @@
         alert("Please click on a file in the floppy label to select it first.");
         return;
       }
-      if (transferBusy) return;
+      if (!writeChar) { alert("Connect AirDrive via Bluetooth first!"); return; }
+      if (transferBusy) { alert("A copy is already in progress. Wait for it to finish."); return; }
       transferBusy = true;
       try {
         let n = 0;
         for (const file of selectedVirtualFiles) {
           n++;
-          showXfer(`Copy to PC (${n}/${selectedVirtualFiles.length})`, `Requesting ${file}…`, 0);
-          if (writeChar) {
-            const cmd = `GET:${activeDrive}:${file}\n`;
-            await writeChar.writeValueWithoutResponse(new TextEncoder().encode(cmd));
-
-            // Wait for download to finish to avoid collision
-            await new Promise(resolve => {
-              const check = setInterval(() => {
-                if (!isDownloading && !downloadBuffer) {
-                  clearInterval(check);
-                  setTimeout(resolve, 500); // 500ms breather
-                }
-              }, 500);
-            });
-          }
+          const title = `Copy to PC (${n}/${selectedVirtualFiles.length})`;
+          showXfer(title, `Requesting ${file}…`, 0);
+          const bytes = await downloadVirtualFile(activeDrive, file, title);
+          showXfer(title, `Saving ${file}…`, 100);
+          await saveBytesToFile(file, bytes);
         }
+      } catch (err) {
+        alert(`Copy to PC failed: ${err && err.message ? err.message : err}`);
       } finally {
         hideXfer();
       }
@@ -896,52 +998,159 @@
       setTimeout(() => requestList(activeDrive), 500);
     };
 
-    document.getElementById('btnBackupSingle').onclick = async () => {
-      let dateStr = new Date().toISOString().split('T')[0];
-      let defaultName = `VDISK_BackUP_Disk${activeDrive}_${dateStr}`;
-      let backupName = prompt("Enter Backup Name:", defaultName);
-      if (!backupName) return;
+    document.getElementById('btnBackupSingle').onclick = () => backupDisks([activeDrive]);
+    document.getElementById('btnBackupAll').onclick = () => backupDisks([1, 2, 3, 4, 5]);
+    document.getElementById('btnRestoreSingle').onclick = () => restoreFromZip({ allDisks: false });
+    document.getElementById('btnRestoreAll').onclick = () => restoreFromZip({ allDisks: true });
 
-      alert(`Requesting single backup for Disk ${activeDrive} to folder '${backupName}'... (Firmware implementation pending)`);
-      const cmd = `BACKUP:${activeDrive}:${backupName}\n`;
-      if (writeChar) await writeChar.writeValueWithoutResponse(new TextEncoder().encode(cmd));
-    };
+    function backupZipName(drives) {
+      const dateStr = new Date().toISOString().split('T')[0];
+      if (drives.length === 5) return `VDISK_BackUP_5disk_${dateStr}.zip`;
+      return `VDISK_BackUP_Disk${drives[0]}_${dateStr}.zip`;
+    }
 
-    document.getElementById('btnRestoreSingle').onclick = async () => {
-      if (!localDirHandle) {
-        alert("Please select a PC folder containing the backup files first.");
-        return;
+    async function backupDisks(drives) {
+      if (!writeChar) { alert("Connect AirDrive via Bluetooth first!"); return; }
+      if (typeof JSZip === 'undefined') { alert("JSZip failed to load. Check your network and reload."); return; }
+      if (transferBusy) { alert("A copy is already in progress. Wait for it to finish."); return; }
+      transferBusy = true;
+      try {
+        const zip = new JSZip();
+        const perDisk = {};
+        let totalFiles = 0;
+        for (const d of drives) {
+          showXfer('Backup', `Listing Disk ${d}…`, 0);
+          await yieldUi();
+          perDisk[d] = await listVirtualFiles(d);
+          totalFiles += perDisk[d].length;
+          zip.folder(`disk${d}`);
+        }
+        let i = 0;
+        for (const d of drives) {
+          if (perDisk[d].length === 0) continue;
+          for (const f of perDisk[d]) {
+            i++;
+            const pct = totalFiles ? Math.floor((i / totalFiles) * 100) : 100;
+            const title = `Backup Disk ${d} (${i}/${totalFiles})`;
+            showXfer(title, f.name, pct);
+            await yieldUi();
+            const bytes = await downloadVirtualFile(d, f.name, title);
+            zip.file(`disk${d}/${f.name}`, bytes);
+          }
+        }
+        showXfer('Backup', 'Building zip…', 100);
+        await yieldUi();
+        const blob = await zip.generateAsync({ type: 'blob' });
+        const saved = await saveBlobAs(backupZipName(drives), blob);
+        if (saved !== false) alert(`Backup saved (${totalFiles} file${totalFiles === 1 ? '' : 's'}).`);
+      } catch (err) {
+        console.error(err);
+        alert(`Backup failed: ${err && err.message ? err.message : err}`);
+      } finally {
+        hideXfer();
       }
-      if (confirm(`WARNING: Restoring will overwrite Disk ${activeDrive} with the contents of your PC folder. Proceed?`)) {
-        alert("Commencing restore of Disk " + activeDrive + " from PC folder. (Mock implementation)");
-        // Logic to rapidly push all matched localFiles via handleUploadRequest
-      }
-    };
+    }
 
-    document.getElementById('btnBackupAll').onclick = async () => {
-      let dateStr = new Date().toISOString().split('T')[0];
-      let defaultName = `VDISK_BackUP_5disk_${dateStr}`;
-      let backupName = prompt("Enter Backup Name for 5-Disk Archive:", defaultName);
-      if (!backupName) return;
+    function parseBackupZipEntries(zip) {
+      const byDisk = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+      zip.forEach((path, entry) => {
+        if (entry.dir) return;
+        const norm = path.replace(/\\/g, '/');
+        const m = norm.match(/(?:^|\/)disk([1-5])\/([^/]+)$/i);
+        if (m) byDisk[parseInt(m[1], 10)].push({ name: m[2], entry });
+      });
+      return byDisk;
+    }
 
-      alert(`Requesting full 5-Disk mass backup to folder '${backupName}'... (Firmware implementation pending)`);
-      const cmd = `BACKUP:ALL:${backupName}\n`;
-      if (writeChar) await writeChar.writeValueWithoutResponse(new TextEncoder().encode(cmd));
-    };
+    async function pickBackupZip() {
+      if (window.showOpenFilePicker) {
+        try {
+          const [handle] = await window.showOpenFilePicker({
+            types: [{ description: 'AirDrive backup zip', accept: { 'application/zip': ['.zip'] } }],
+            multiple: false
+          });
+          return await handle.getFile();
+        } catch (err) {
+          if (err && err.name === 'AbortError') return null;
+        }
+      }
+      return await new Promise((resolve) => {
+        const input = document.getElementById('restoreZipInput');
+        input.value = '';
+        input.onchange = () => resolve(input.files[0] || null);
+        input.click();
+      });
+    }
 
-    document.getElementById('btnRestoreAll').onclick = async () => {
-      if (!localDirHandle) {
-        alert("Please select a PC folder first.");
-        return;
+    async function formatDisk(driveNum) {
+      await writeChar.writeValueWithoutResponse(new TextEncoder().encode(`FORMAT:${driveNum}\n`));
+      await sleep(1000);
+    }
+
+    async function restoreFromZip({ allDisks }) {
+      if (!writeChar) { alert("Connect AirDrive via Bluetooth first!"); return; }
+      if (typeof JSZip === 'undefined') { alert("JSZip failed to load. Check your network and reload."); return; }
+      if (transferBusy) { alert("A copy is already in progress. Wait for it to finish."); return; }
+
+      const zipFile = await pickBackupZip();
+      if (!zipFile) return;
+
+      const zip = await JSZip.loadAsync(zipFile);
+      const byDisk = parseBackupZipEntries(zip);
+      const present = [1, 2, 3, 4, 5].filter(d => byDisk[d].length > 0);
+
+      let targets;
+      if (allDisks) {
+        targets = [1, 2, 3, 4, 5];
+        if (!confirm('CRITICAL WARNING: Mass Restore will FORMAT every virtual disk (1-5) and replace them with this zip. This cannot be undone. Continue?')) return;
+      } else {
+        if (byDisk[activeDrive].length > 0) {
+          targets = [activeDrive];
+        } else if (present.length === 1) {
+          targets = [activeDrive];
+          byDisk[activeDrive] = byDisk[present[0]];
+        } else if (present.length === 0) {
+          alert('This zip has no disk1/…disk5/ folders from an AirDrive backup.');
+          return;
+        } else {
+          alert(`This zip has disks ${present.join(', ')} but nothing for Disk ${activeDrive}. Switch to that disk, or use RESTORE 5-Disks All.`);
+          return;
+        }
+        const n = byDisk[targets[0]].length;
+        if (!confirm(`WARNING: Restoring will FORMAT Disk ${activeDrive} and replace it with ${n} file(s) from the zip. Continue?`)) return;
       }
-      if (confirm(`CRITICAL WARNING: Mass Restore will COMPLETELY FORMAT EVERY VIRTUAL DISK (1-5) and replace them with contents from the PC folder. This cannot be undone! Are you absolutely sure?`)) {
-        alert("Commencing full 5-Disk mass restore... (Mock implementation)");
+
+      transferBusy = true;
+      try {
+        let totalFiles = 0;
+        for (const d of targets) totalFiles += byDisk[d].length;
+        let i = 0;
+        for (const d of targets) {
+          showXfer(`Restore Disk ${d}`, 'Formatting…', totalFiles ? Math.floor((i / totalFiles) * 100) : 0);
+          await yieldUi();
+          await formatDisk(d);
+          for (const item of byDisk[d]) {
+            i++;
+            const pct = totalFiles ? Math.floor((i / totalFiles) * 100) : 100;
+            showXfer(`Restore Disk ${d} (${i}/${totalFiles})`, item.name, pct);
+            await yieldUi();
+            const bytes = await item.entry.async('uint8array');
+            await uploadBytes(d, item.name, bytes);
+          }
+          await listVirtualFiles(d);
+        }
+        alert('Restore complete.');
+      } catch (err) {
+        console.error(err);
+        alert(`Restore failed: ${err && err.message ? err.message : err}`);
+      } finally {
+        hideXfer();
+        requestList(activeDrive);
       }
-    };
+    }
 
     // --- Local PC Directory Handling ---
     let localDirHandle = null;
-    let localFiles = {};
 
     const btnSelectDir = document.getElementById('btnSelectDir');
     const fallbackDirInput = document.getElementById('fallbackDirInput');
@@ -1003,40 +1212,20 @@
       pcBrowser.classList.remove('drag-over');
 
       const filename = e.dataTransfer.getData('application/x-floppy-file');
-      if (filename) {
-        // We no longer strictly require localDirHandle here because 
-        // Chrome showSaveFilePicker will handle the destination safely
-        alert(`Requesting ${filename} from Floppy ${activeDrive}... Download will start momentarily.`);
-
-        if (writeChar) {
-          const cmd = `GET:${activeDrive}:${filename}\n`;
-          await writeChar.writeValueWithoutResponse(new TextEncoder().encode(cmd));
-        }
+      if (!filename) return;
+      if (!writeChar) { alert("Connect AirDrive via Bluetooth first!"); return; }
+      if (transferBusy) { alert("A copy is already in progress. Wait for it to finish."); return; }
+      transferBusy = true;
+      try {
+        showXfer(`Copying ${filename} to PC`, 'Requesting…', 0);
+        const bytes = await downloadVirtualFile(activeDrive, filename);
+        await saveBytesToFile(filename, bytes);
+      } catch (err) {
+        alert(`Copy to PC failed: ${err && err.message ? err.message : err}`);
+      } finally {
+        hideXfer();
       }
     });
-
-    // --- Mass Backup/Restore Logic using JSZip ---
-    document.getElementById('btnBackupAll').onclick = async () => {
-      if (!writeChar) { alert("Connect to AirDrive first!"); return; }
-
-      let dateStr = new Date().toISOString().split('T')[0];
-      let defaultName = `VDISK_BackUP_5disk_${dateStr}.zip`;
-
-      // We will loop over all 5 disks, parse their lists, download the chunks, and append them to a JSZip archive
-      alert("Mass Backup requires sequential downloading of all files. This may take several minutes depending on storage size. (Pending full async queue architecture).");
-    };
-
-    document.getElementById('btnBackupSingle').onclick = async () => {
-      alert("Single Disk Backup pending full queue architecture.");
-    };
-
-    document.getElementById('btnRestoreSingle').onclick = async () => {
-      alert("Restore functionality requires unzipping into browser memory and uploading via queue. Pending implementation.");
-    };
-
-    document.getElementById('btnRestoreAll').onclick = async () => {
-      alert("Restore functionality requires unzipping into browser memory and uploading via queue. Pending implementation.");
-    };
 
     // --- Floppy Drop Target (Upload from PC) ---
     function setupFloppyDropZones() {
@@ -1094,6 +1283,37 @@
         newName = newName.toUpperCase();
       }
       return newName;
+    }
+
+    async function uploadBytes(driveNum, finalName, data) {
+      const killCmd = `KILL:${driveNum}:${finalName}\n`;
+      await writeChar.writeValueWithResponse(new TextEncoder().encode(killCmd));
+
+      const headerStr = `D${driveNum}${finalName}:`;
+      const headerBytes = new TextEncoder().encode(headerStr);
+      const MAX_PAYLOAD_SIZE = Math.max(16, 244 - headerBytes.length);
+
+      if (data.length === 0) {
+        await writeChar.writeValueWithResponse(headerBytes);
+      }
+
+      for (let i = 0; i < data.length; i += MAX_PAYLOAD_SIZE) {
+        const chunkData = data.slice(i, i + MAX_PAYLOAD_SIZE);
+        const packet = new Uint8Array(headerBytes.length + chunkData.length);
+        packet.set(headerBytes, 0);
+        packet.set(chunkData, headerBytes.length);
+        await writeChar.writeValueWithResponse(packet);
+
+        const sent = Math.min(i + chunkData.length, data.length);
+        const pct = data.length ? Math.floor((sent / data.length) * 100) : 100;
+        showXfer(`Copying ${finalName} to Disk ${driveNum}`,
+          `${sent} / ${data.length} bytes`, pct);
+        await yieldUi();
+      }
+
+      showXfer(`Copying ${finalName} to Disk ${driveNum}`, 'Finishing…', 100);
+      await yieldUi();
+      await writeChar.writeValueWithResponse(new TextEncoder().encode(`\nEOF:${finalName}\n`));
     }
 
     async function handleUploadRequest(fileHandle) {
@@ -1154,34 +1374,7 @@
           `0 / ${data.length} bytes`, 0);
         await yieldUi();
 
-        // PRE-FLIGHT: Delete any existing file first to ensure a clean write!
-        const killCmd = `KILL:${activeDrive}:${finalName}\n`;
-        await writeChar.writeValueWithResponse(new TextEncoder().encode(killCmd));
-
-        const headerStr = `D${activeDrive}${finalName}:`;
-        const headerBytes = new TextEncoder().encode(headerStr);
-        const MAX_PAYLOAD_SIZE = 244 - headerBytes.length; // Max file bytes per packet
-
-        for (let i = 0; i < data.length; i += MAX_PAYLOAD_SIZE) {
-          const chunkData = data.slice(i, i + MAX_PAYLOAD_SIZE);
-          let packet = new Uint8Array(headerBytes.length + chunkData.length);
-          packet.set(headerBytes, 0);
-          packet.set(chunkData, headerBytes.length);
-
-          // Use WithResponse for flawless hardware-paced synchronization (no dropped packets!)
-          await writeChar.writeValueWithResponse(packet);
-
-          const sent = Math.min(i + chunkData.length, data.length);
-          const pct = data.length ? Math.floor((sent / data.length) * 100) : 100;
-          showXfer(`Copying ${finalName} to Disk ${activeDrive}`,
-            `${sent} / ${data.length} bytes`, pct);
-          await yieldUi();
-        }
-
-        showXfer(`Copying ${finalName} to Disk ${activeDrive}`, 'Finishing…', 100);
-        await yieldUi();
-        const eofStr = `\nEOF:${finalName}\n`;
-        await writeChar.writeValueWithResponse(new TextEncoder().encode(eofStr));
+        await uploadBytes(activeDrive, finalName, data);
 
         console.log('Upload complete');
         setTimeout(() => requestList(activeDrive), 500);
