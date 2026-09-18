@@ -389,8 +389,8 @@
 
     <div class="pc-footer"
       style="margin-top: 15px; border-top: 2px solid #555; padding-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
-      <button id="btnBackupAll" style="flex: 1;">BACKUP 5-Disks All</button>
-      <button id="btnRestoreAll" class="danger-btn" style="flex: 1;">RESTORE 5-Disks All</button>
+      <button id="btnBackupAll" style="flex: 1;">BACKUP All 5 Disks at ONCE</button>
+      <button id="btnRestoreAll" class="danger-btn" style="flex: 1;">RESTORE All 5 Disks at ONCE</button>
     </div>
   </div>
 
@@ -1113,7 +1113,7 @@
           alert('This zip has no disk1/…disk5/ folders from an AirDrive backup.');
           return;
         } else {
-          alert(`This zip has disks ${present.join(', ')} but nothing for Disk ${activeDrive}. Switch to that disk, or use RESTORE 5-Disks All.`);
+          alert(`This zip has disks ${present.join(', ')} but nothing for Disk ${activeDrive}. Switch to that disk, or use RESTORE All 5 Disks at ONCE.`);
           return;
         }
         const n = byDisk[targets[0]].length;
