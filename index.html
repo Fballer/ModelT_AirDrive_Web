@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Porta MT: AirDrive Web BLE</title>
+  <style>
+    body {
+      background-color: #222222;
+      /* Off-Black */
+      color: #9ea78d;
+      /* Olive-Grey */
+      font-family: monospace;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      margin-top: 20px;
+    }
+
+    .controls {
+      margin-top: 10px;
+      margin-bottom: 20px;
+      display: flex;
+      gap: 15px;
+    }
+
+    button {
+      background-color: #2a4d87;
+      /* Floppy Blue */
+      color: #9ea78d;
+      /* Olive-Grey */
+      border: 2px solid #9ea78d;
+      padding: 10px 15px;
+      font-family: monospace;
+      font-size: 16px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background-color: #1a355f;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .main-area {
+      display: flex;
+      gap: 60px;
+      align-items: flex-start;
+      margin-top: 20px;
+      width: 1200px;
+      justify-content: center;
+    }
+
+    .floppy-stack {
+      position: relative;
+      width: 700px;
+      height: 550px;
+      perspective: 800px;
+    }
+
+    .disk-controls {
+      background-color: #111111;
+      border: 3px solid #872a2a;
+      /* Warning Red */
+      padding: 20px;
+      border-radius: 5px;
+      width: 240px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .disk-controls h3 {
+      margin-top: 0;
+      margin-bottom: 5px;
+      color: #fff;
+      text-align: center;
+      border-bottom: 2px solid #333;
+      padding-bottom: 10px;
+    }
+
+    .disk-controls button {
+      width: 100%;
+      font-size: 14px;
+      padding: 8px;
+    }
+
+    /* Shared Floppy Disk Styles */
+    .floppy {
+      position: absolute;
+      width: 450px;
+      height: 450px;
+      background-color: #2a4d87;
+      border: 3px solid #111111;
+      border-radius: 5px;
+      box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+      transition: all 0.4s ease-out;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transform-origin: bottom center;
+    }
+
+    /* Metal Slider */
+    .floppy::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 60px;
+      width: 130px;
+      height: 90px;
+      background: linear-gradient(90deg, #dddddd 0%, #ffffff 25%, #aaaaaa 50%, #e0e0e0 75%, #999999 100%);
+      border-radius: 0 0 5px 5px;
+      border: 2px solid #111111;
+      border-top: none;
+      box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Write Protection Hole */
+    .floppy::after {
+      content: '';
+      position: absolute;
+      bottom: 25px;
+      left: 25px;
+      width: 18px;
+      height: 18px;
+      background-color: #111111;
+      border: 2px solid #333333;
+      border-radius: 2px;
+      box-shadow: inset 2px 2px 4px #000;
+    }
+
+    .label {
+      background-color: #ffffff;
+      color: #222222;
+      width: 320px;
+      height: 280px;
+      margin-top: 130px;
+      padding: 10px;
+      border: 1px solid #000;
+      box-sizing: border-box;
+      font-family: monospace;
+      font-size: 16px;
+      overflow-y: auto;
+    }
+
+    .label-header {
+      font-weight: bold;
+      text-align: center;
+      border-bottom: 2px solid #222;
+      margin-bottom: 10px;
+      padding-bottom: 5px;
+      font-size: 16px;
+    }
+
+    .file-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .file-list li {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px dashed #aaa;
+      padding: 2px 5px;
+      cursor: pointer;
+    }
+
+    .file-list li:hover {
+      background-color: #eee;
+    }
+
+    .file-list li.selected {
+      background-color: #2a4d87;
+      color: #fff;
+    }
+
+    /* All positioning dynamic via JS */
+    .floppy.active {
+      z-index: 10 !important;
+      cursor: default;
+    }
+
+    /* Drive Number Badge */
+    .disk-num {
+      position: absolute;
+      top: 15px;
+      right: 25px;
+      color: #9ea78d;
+      font-size: 36px;
+      font-weight: bold;
+      pointer-events: none;
+      background-color: #111111;
+      padding: 5px 12px;
+      border-radius: 4px;
+    }
+
+    /* PC Browser Styles */
+    .pc-browser {
+      width: 800px;
+      margin-top: 10px;
+      margin-bottom: 50px;
+      background-color: #111111;
+      border: 3px solid #9ea78d;
+      padding: 15px;
+      border-radius: 5px;
+      transition: all 0.2s;
+    }
+
+    .pc-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #555;
+      padding-bottom: 15px;
+      margin-bottom: 15px;
+    }
+
+    .pc-header h2 {
+      margin: 0;
+      color: #fff;
+      font-size: 20px;
+    }
+
+    .pc-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .danger-btn {
+      background-color: #872a2a;
+      border-color: #ff5555;
+    }
+
+    .danger-btn:hover {
+      background-color: #a83535;
+    }
+
+    .pc-file-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      max-height: 220px;
+      overflow-y: auto;
+      background: #222;
+    }
+
+    /* Custom Webkit Scrollbar for the PC List */
+    .pc-file-list::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    .pc-file-list::-webkit-scrollbar-track {
+      background: #111;
+      border-left: 1px solid #444;
+    }
+
+    .pc-file-list::-webkit-scrollbar-thumb {
+      background: #555;
+      border-radius: 4px;
+    }
+
+    .pc-file-list::-webkit-scrollbar-thumb:hover {
+      background: #777;
+    }
+
+    .pc-file-list li {
+      padding: 8px 10px;
+      border-bottom: 1px dotted #444;
+      cursor: grab;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .pc-file-list li:hover {
+      background-color: #333;
+    }
+
+    .floppy.drag-over {
+      border-color: #fff;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+      transform: translate3d(0, 40px, 40px) scale(1.15) !important;
+    }
+
+    .pc-browser.drag-over {
+      background-color: #2a2a2a;
+      border-color: #fff;
+    }
+
+    #xferBar {
+      display: none;
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 10000;
+      background: #111;
+      border-top: 3px solid #87b9ff;
+      padding: 12px 20px 16px;
+      font-family: monospace;
+      color: #9ea78d;
+      box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.5);
+    }
+
+    #xferBar.visible {
+      display: block;
+    }
+
+    #xferTitle {
+      font-weight: bold;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    #xferDetail {
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    #xferTrack {
+      height: 14px;
+      background: #333;
+      border: 1px solid #87b9ff;
+    }
+
+    #xferFill {
+      height: 100%;
+      width: 0%;
+      background: #2a4d87;
+      transition: width 0.12s linear;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- JSZip Library for Backup/Restore -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+  <h1>Porta MT: AirDrive Manager</h1>
+
+  <div class="controls">
+    <button id="btnConnect">Connect AirDrive</button>
+    <button id="btnRefresh" disabled>Refresh Active Drive</button>
+    <button id="btnHelp" onclick="window.open('help.html', '_blank')">HELP File</button>
+  </div>
+
+  <div class="main-area">
+    <div class="floppy-stack" id="stack">
+      <!-- Generated dynamically in JS -->
+    </div>
+
+    <div class="disk-controls" id="diskControls" style="display:none;">
+      <h3 id="controlDriveTitle">Virtual DISK Commands</h3>
+      <button id="btnCopyPC">COPY Selected Files to PC</button>
+      <button id="btnCopyDisk">COPY Selected Files to Other Virtual DISK</button>
+      <button id="btnRename">RENAME Selected File</button>
+      <button id="btnKill">DELETE/KILL Selected File</button>
+      <button id="btnBackupSingle">BACKUP entire selected Virtual DISK to PC</button>
+      <button id="btnRestoreSingle">RESTORE Backup from PC to Virtual Disk</button>
+      <button id="btnFormat" class="danger-btn">FORMAT Select Virtual Disk</button>
+    </div>
+  </div>
+
+  <div class="pc-browser" id="pcBrowser">
+    <div class="pc-header">
+      <h2>PC FOLDER: <span style="font-size: 14px; font-weight: normal; color: #ccc;">(Drag and Drop Files onto Disk
+          Label above)</span></h2>
+      <div class="pc-actions">
+        <button id="btnSelectDir" style="font-size: 13px; padding: 6px 12px; white-space: nowrap;">Select
+          Folder</button>
+        <input type="file" id="fallbackDirInput" webkitdirectory directory multiple style="display: none;" />
+      </div>
+    </div>
+    <ul class="pc-file-list" id="pcList">
+      <li><i>No folder selected. Click "Select Folder" to browse your computer.</i></li>
+    </ul>
+
+    <div class="pc-footer"
+      style="margin-top: 15px; border-top: 2px solid #555; padding-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+      <button id="btnBackupAll" style="flex: 1;">BACKUP 5-Disks All</button>
+      <button id="btnRestoreAll" class="danger-btn" style="flex: 1;">RESTORE 5-Disks All</button>
+    </div>
+  </div>
+
+  <!-- Modal disk select -->
+  <div id="diskSelectModal"
+    style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); width:300px; background:#111; border:3px solid #87b9ff; padding:20px; z-index:9999; text-align:center;">
+    <h3 style="color:#fff; margin-top:0;">Select Destination Disk</h3>
+    <div style="display:flex; justify-content:space-around; margin-top:15px; margin-bottom:15px;">
+      <button onclick="commitDiskCopy(1)">#1</button>
+      <button onclick="commitDiskCopy(2)">#2</button>
+      <button onclick="commitDiskCopy(3)">#3</button>
+      <button onclick="commitDiskCopy(4)">#4</button>
+      <button onclick="commitDiskCopy(5)">#5</button>
+    </div>
+    <button onclick="document.getElementById('diskSelectModal').style.display='none'">Cancel</button>
+  </div>
+
+  <div id="xferBar" aria-live="polite">
+    <div id="xferTitle">Working…</div>
+    <div id="xferDetail">Please wait</div>
+    <div id="xferTrack">
+      <div id="xferFill"></div>
+    </div>
+  </div>
+
+  <script>
+    // --- BLE Setup ---
+    const SERVICE_UUID = "19b10000-e8f2-537e-4f6c-d104768a1214";
+    const CHAR_WRITE_UUID = "19b10001-e8f2-537e-4f6c-d104768a1214";
+    const CHAR_NOTIFY_UUID = "19b10002-e8f2-537e-4f6c-d104768a1214";
+
+    let bleDevice = null;
+    let bleServer = null;
+    let writeChar = null;
+    let notifyChar = null;
+
+    let activeDrive = 1; // Default front disk
+
+    // --- DOM Elements ---
+    const stack = document.getElementById('stack');
+    const btnConnect = document.getElementById('btnConnect');
+    const btnRefresh = document.getElementById('btnRefresh');
+
+    // Disk Controls
+    const diskControls = document.getElementById('diskControls');
+    const controlDriveTitle = document.getElementById('controlDriveTitle');
+
+    // Selected virtual file tracking
+    let selectedVirtualFiles = [];
+    let transferBusy = false;
+
+    function showXfer(title, detail, pct) {
+      const bar = document.getElementById('xferBar');
+      document.getElementById('xferTitle').textContent = title;
+      document.getElementById('xferDetail').textContent = detail;
+      const fill = document.getElementById('xferFill');
+      const n = Math.max(0, Math.min(100, pct == null ? 0 : pct));
+      fill.style.width = n + '%';
+      bar.classList.add('visible');
+    }
+
+    function hideXfer() {
+      document.getElementById('xferBar').classList.remove('visible');
+      transferBusy = false;
+    }
+
+    async function yieldUi() {
+      await new Promise(r => requestAnimationFrame(() => r()));
+    }
+
+    // Virtual Disk Storage Stats Simulator (100KB Max from TPDD-1 standard)
+    const DISK_MAX_BYTES = 102400;
+    let diskStats = { 1: { f: 0, b: 0 }, 2: { f: 0, b: 0 }, 3: { f: 0, b: 0 }, 4: { f: 0, b: 0 }, 5: { f: 0, b: 0 } };
+
+    function updateDiskStatsUI(driveNum) {
+      const stats = diskStats[driveNum];
+      const freeKb = Math.max(0, Math.floor((DISK_MAX_BYTES - stats.bytes) / 1024));
+      const el = document.getElementById(`disk-stats-${driveNum}`);
+      if (el) {
+        el.innerHTML = `<strong>${stats.files || 0} / 39</strong> Slots | <strong>${freeKb}KB</strong> Free`;
+      }
+    }
+
+    // --- UI Floppy Initialization ---
+    for (let i = 1; i <= 5; i++) {
+      const floppy = document.createElement('div');
+      floppy.className = 'floppy';
+      floppy.dataset.drive = i;
+      floppy.innerHTML = `
+        <div class="disk-num">#${i}</div>
+        <div class="label">
+          <div class="label-header">DISK ${i}</div>
+          <div id="disk-stats-${i}" style="font-size: 12px; text-align: center; color: #333; border-bottom: 1px dotted #888; padding-bottom: 5px; margin-top: -6px; margin-bottom: 5px; font-weight: normal;">
+            <strong>0 / 39</strong> Slots | <strong>100KB</strong> Free
+          </div>
+          <ul class="file-list" id="list-${i}">
+            <li><i>Not Connected</i></li>
+          </ul>
+        </div>
+      `;
+      floppy.onclick = () => setActiveDrive(i);
+      stack.appendChild(floppy);
+    }
+    setActiveDrive(activeDrive);
+
+    function setActiveDrive(driveNum) {
+      activeDrive = driveNum;
+
+      const floppies = Array.from(document.querySelectorAll('.floppy'));
+      floppies.sort((a, b) => parseInt(a.dataset.drive) - parseInt(b.dataset.drive));
+
+      floppies.forEach(f => {
+        const dNum = parseInt(f.dataset.drive);
+
+        if (dNum === driveNum) {
+          f.classList.add('active');
+          f.style.transform = `translate3d(0, 40px, 40px) scale(1.1)`;
+          f.style.zIndex = 10;
+        } else {
+          f.classList.remove('active');
+
+          // Calculate logical position in the 5-disk loop relative to the active drive
+          // If active is 3:
+          // dNum 4 -> 1 position away
+          // dNum 5 -> 2 positions away
+          // dNum 1 -> 3 positions away
+          // dNum 2 -> 4 positions away
+          let posAway = (dNum - driveNum);
+          if (posAway < 0) {
+            posAway += 5;
+          }
+
+          // Stack them all strictly to the right, stepping backwards into the Z-axis
+          const xOffset = posAway * 100;
+          const zOffset = posAway * -50;
+
+          f.style.transform = `translate3d(${xOffset}px, 0, ${zOffset}px)`;
+          f.style.zIndex = 5 - posAway; // Closest = highest z-index
+        }
+      });
+      if (writeChar) {
+        requestList(driveNum);
+        diskControls.style.display = 'flex';
+        controlDriveTitle.innerText = `Virtual DISK ${driveNum} Commands`;
+        selectedVirtualFiles = []; // Reset selection on switch
+      }
+    }
+
+    // --- BLE Connection ---
+    btnConnect.onclick = async () => {
+      try {
+        console.log('Requesting Bluetooth Device...');
+
+        let devices = [];
+        // Safely check if experimental getDevices is supported
+        if (typeof navigator.bluetooth.getDevices === 'function') {
+          try {
+            devices = await navigator.bluetooth.getDevices();
+          } catch (e) { console.log('getDevices not supported or enabled:', e); }
+        }
+
+        if (devices && devices.length > 0) {
+          bleDevice = devices[0];
+          console.log('Found previously paired device:', bleDevice.name);
+        } else {
+          bleDevice = await navigator.bluetooth.requestDevice({
+            filters: [{ services: [SERVICE_UUID] }]
+          });
+        }
+
+        bleDevice.addEventListener('gattserverdisconnected', onDisconnected);
+
+        console.log('Connecting to GATT Server...');
+        bleServer = await bleDevice.gatt.connect();
+
+        console.log('Getting Service...');
+        const service = await bleServer.getPrimaryService(SERVICE_UUID);
+
+        console.log('Getting Characteristics...');
+        writeChar = await service.getCharacteristic(CHAR_WRITE_UUID);
+        notifyChar = await service.getCharacteristic(CHAR_NOTIFY_UUID);
+
+        await notifyChar.startNotifications();
+        notifyChar.addEventListener('characteristicvaluechanged', handleNotifications);
+
+        btnConnect.innerText = 'Connected';
+        btnConnect.disabled = true;
+        btnRefresh.disabled = false;
+
+        diskControls.style.display = 'flex';
+        controlDriveTitle.innerText = `Virtual DISK ${activeDrive} Commands`;
+
+        // Auto request active drive files
+        requestList(activeDrive);
+
+      } catch (error) {
+        console.error('BLE Setup failed:', error);
+      }
+    };
+
+    function onDisconnected() {
+      console.log('Disconnected');
+      btnConnect.innerText = 'Connect AirDrive';
+      btnConnect.disabled = false;
+      btnRefresh.disabled = true;
+      diskControls.style.display = 'none';
+      writeChar = null;
+      notifyChar = null;
+    }
+
+    // --- BLE Communication ---
+
+    // Receiving data from nRF (Directory Listing or Binary Download)
+    let rxBuffer = "";
+    let isDownloading = false;
+    let downloadFileName = "";
+    let downloadSize = 0;
+    let downloadBuffer = null;
+    let downloadCursor = 0;
+
+    async function handleNotifications(event) {
+      if (isDownloading) {
+        // Binary Stream Capture Mode
+        const data = new Uint8Array(event.target.value.buffer);
+
+        let eofCheck = new TextDecoder().decode(data);
+          if (eofCheck.includes('\nEOF:')) {
+          // Stream Complete
+          console.log(`Finished receiving ${downloadFileName}. Dumping to file...`);
+          isDownloading = false;
+          showXfer(`Saving ${downloadFileName}`, 'Choose where to save…', 100);
+          await saveDownloadToFile();
+          hideXfer();
+          return;
+        }
+
+        // Just blindly accumulator payload chunks
+        if (downloadBuffer) {
+          downloadBuffer.set(data, downloadCursor);
+          downloadCursor += data.length;
+          const pct = downloadSize ? Math.floor((downloadCursor / downloadSize) * 100) : 0;
+          showXfer(`Copying ${downloadFileName} to PC`,
+            `${downloadCursor} / ${downloadSize} bytes`, pct);
+        }
+        return;
+      }
+
+      // ASCII Text Parsing Mode (Directory Lists & Headers)
+      const value = event.target.value;
+      const str = new TextDecoder().decode(value);
+      rxBuffer += str;
+
+      if (rxBuffer.includes('\n')) {
+        const lines = rxBuffer.split('\n');
+        rxBuffer = lines.pop(); // Keep partial line
+
+        for (let line of lines) {
+          line = line.trim();
+          if (line.startsWith('L:')) {
+            // L:1:FILE.DO:1200
+            const parts = line.split(':');
+            if (parts.length >= 4) {
+              addFileToList(parts[1], parts[2], parts[3]);
+            }
+          } else if (line.startsWith('CLR:')) {
+            const drive = line.split(':')[1];
+            if (drive) document.getElementById(`list-${drive}`).innerHTML = '';
+          } else if (line.startsWith('G:')) {
+            // Incoming Download Header Setup (e.g. G:1:FILE.CO:2400)
+            const parts = line.split(':');
+            downloadFileName = parts[2];
+            downloadSize = parseInt(parts[3] || 0);
+            downloadBuffer = new Uint8Array(downloadSize);
+            downloadCursor = 0;
+            isDownloading = true;
+            console.log(`Incoming stream for ${downloadFileName} (${downloadSize} bytes)...`);
+            showXfer(`Copying ${downloadFileName} to PC`, `0 / ${downloadSize} bytes`, 0);
+          } else if (line === 'END') {
+            const list = document.getElementById(`list-${activeDrive}`);
+            if (list.innerHTML.includes('Loading...')) {
+              list.innerHTML = '<li><i>EMPTY.....</i></li>';
+            }
+          }
+        }
+      }
+    }
+
+    async function saveDownloadToFile() {
+      try {
+        // Prompt user to save the explicitly downloaded file
+        const options = {
+          suggestedName: downloadFileName,
+          types: [{
+            description: 'Model 100 File',
+            accept: { 'application/octet-stream': ['.do', '.co', '.ba'] },
+          }],
+        };
+        const handle = await window.showSaveFilePicker(options);
+        const writable = await handle.createWritable();
+
+        // We only write up to the exact received cursor in case size was slightly off
+        const finalChunk = downloadBuffer.subarray(0, downloadCursor);
+        await writable.write(finalChunk);
+        await writable.close();
+
+        // Auto-refresh the PC UI list dynamically so they don't have to rescan
+        const pcList = document.getElementById('pcList');
+        // Clear "empty" message if it exists
+        if (pcList.innerHTML.includes('No top-level files') || pcList.innerHTML.includes('Folder is empty') || pcList.innerHTML.includes('No folder selected')) {
+          pcList.innerHTML = '';
+        }
+
+        // Cache the handle so you can immediately drag it back up to a virtual disk!
+        localFiles[downloadFileName] = handle;
+
+        // Check if file already exists in UI to avoid duplicates
+        let exists = false;
+        Array.from(pcList.children).forEach(li => {
+          if (li.innerText.includes(downloadFileName)) exists = true;
+        });
+        if (!exists) {
+          const li = document.createElement('li');
+          li.draggable = true;
+          li.innerHTML = `<span>&#128196; ${downloadFileName}</span><span>PC File (Saved)</span>`;
+          li.ondragstart = (ev) => {
+            ev.dataTransfer.setData('text/plain', downloadFileName);
+            ev.dataTransfer.effectAllowed = 'copy';
+          };
+          pcList.appendChild(li);
+        }
+        alert(`Successfully saved ${downloadFileName} to your computer!`);
+      } catch (err) {
+        console.error("Save failed or cancelled by user:", err);
+      }
+
+      // Cleanup Global Refs
+      downloadBuffer = null;
+      downloadFileName = "";
+      downloadCursor = 0;
+    }
+
+    function addFileToList(driveNum, filename, size) {
+      const list = document.getElementById(`list-${driveNum}`);
+      if (list.innerHTML.includes('Not Connected') || list.innerHTML.includes('No files') || list.innerHTML.includes('Loading...')) {
+        list.innerHTML = '';
+      }
+
+      // Update running disk stats tally
+      diskStats[driveNum].files = (diskStats[driveNum].files || 0) + 1;
+      diskStats[driveNum].bytes += parseInt(size || 0);
+      updateDiskStatsUI(driveNum);
+
+      const li = document.createElement('li');
+      li.draggable = true;
+      li.innerHTML = `<span>${filename}</span><span>${size}B</span>`;
+
+      li.onclick = (e) => {
+        e.stopPropagation(); // Prevent the floppy disk behind this from firing its own onclick and resetting the list!
+
+        // Multi-select toggle support
+        if (e.shiftKey || e.ctrlKey || e.metaKey) {
+          if (li.classList.contains('selected')) {
+            li.classList.remove('selected');
+            selectedVirtualFiles = selectedVirtualFiles.filter(f => f !== filename);
+          } else {
+            li.classList.add('selected');
+            selectedVirtualFiles.push(filename);
+          }
+        } else {
+          Array.from(list.children).forEach(child => child.classList.remove('selected'));
+          li.classList.add('selected');
+          selectedVirtualFiles = [filename];
+        }
+      };
+
+      li.ondragstart = (e) => {
+        e.dataTransfer.setData('application/x-floppy-file', filename);
+        e.dataTransfer.effectAllowed = 'copy';
+      };
+      list.appendChild(li);
+    }
+
+    async function requestList(driveNum) {
+      if (!writeChar) return;
+      document.getElementById(`list-${driveNum}`).innerHTML = '<li><i>Loading...</i></li>';
+      // Reset stats cleanly before pulling the new listing
+      diskStats[driveNum] = { files: 0, bytes: 0 };
+      updateDiskStatsUI(driveNum);
+
+      const cmd = `LIST:${driveNum}\n`;
+      const enc = new TextEncoder().encode(cmd);
+      await writeChar.writeValueWithoutResponse(enc);
+    }
+
+    btnRefresh.onclick = () => requestList(activeDrive);
+
+    // --- Virtual Disk Commands ---
+    document.getElementById('btnCopyPC').onclick = async () => {
+      if (selectedVirtualFiles.length === 0) {
+        alert("Please click on a file in the floppy label to select it first.");
+        return;
+      }
+      if (transferBusy) return;
+      transferBusy = true;
+      try {
+        let n = 0;
+        for (const file of selectedVirtualFiles) {
+          n++;
+          showXfer(`Copy to PC (${n}/${selectedVirtualFiles.length})`, `Requesting ${file}…`, 0);
+          if (writeChar) {
+            const cmd = `GET:${activeDrive}:${file}\n`;
+            await writeChar.writeValueWithoutResponse(new TextEncoder().encode(cmd));
+
+            // Wait for download to finish to avoid collision
+            await new Promise(resolve => {
+              const check = setInterval(() => {
+                if (!isDownloading && !downloadBuffer) {
+                  clearInterval(check);
+                  setTimeout(resolve, 500); // 500ms breather
+                }
+              }, 500);
+            });
+          }
+        }
+      } finally {
+        hideXfer();
+      }
+    };
+
+    document.getElementById('btnCopyDisk').onclick = () => {
+      if (selectedVirtualFiles.length === 0) {
+        alert("Please click on a file in the floppy label to select it first.");
+        return;
+      }
+      document.getElementById('diskSelectModal').style.display = 'block';
+    };
+
+    window.commitDiskCopy = async function (destDrive) {
+      document.getElementById('diskSelectModal').style.display = 'none';
+      if (destDrive === activeDrive) return; // Cannot copy to self
+      if (selectedVirtualFiles.length === 0) return;
+
+      transferBusy = true;
+      try {
+        let n = 0;
+        for (const file of selectedVirtualFiles) {
+          n++;
+          const pct = Math.floor((n / selectedVirtualFiles.length) * 100);
+          showXfer(`Copying to Disk ${destDrive}`,
+            `${n}/${selectedVirtualFiles.length}: ${file}`, pct);
+          await yieldUi();
+          const cmd = `CPY:${activeDrive}:${destDrive}:${file}\n`;
+          if (writeChar) await writeChar.writeValueWithoutResponse(new TextEncoder().encode(cmd));
+          await new Promise(r => setTimeout(r, 600)); // give firmware time to write to FS
+        }
+        alert(`Successfully Copied ${selectedVirtualFiles.length} file(s) to Disk ${destDrive}.`);
+      } finally {
+        hideXfer();
+      }
+    };
+
+    document.getElementById('btnFormat').onclick = async () => {
+      if (confirm(`WARNING: Formatting Virtual Disk ${activeDrive} will permanently erase all files on it. Proceed?`)) {
+        const cmd = `FORMAT:${activeDrive}\n`;
+        await writeChar.writeValueWithoutResponse(new TextEncoder().encode(cmd));
+        setTimeout(() => requestList(activeDrive), 1000);
+      }
+    };
+
+    document.getElementById('btnKill').onclick = async () => {
+      if (selectedVirtualFiles.length === 0) {
+        alert("Please click on a file in the floppy label to select it first.");
+        return;
+      }
+      for (const file of selectedVirtualFiles) {
+        if (confirm(`ARE YOU SURE to delete ${file} Yes or No?`)) {
+          const cmd = `KILL:${activeDrive}:${file}\n`;
+          await writeChar.writeValueWithoutResponse(new TextEncoder().encode(cmd));
+          await new Promise(r => setTimeout(r, 500));
+        }
+      }
+      requestList(activeDrive);
+    };
+
+    document.getElementById('btnRename').onclick = async () => {
+      if (selectedVirtualFiles.length === 0) {
+        alert("Please click on a file to select it first.");
+        return;
+      }
+
+      const file = selectedVirtualFiles[0];
+      if (selectedVirtualFiles.length > 1) {
+        alert(`Warning: Multiple files selected. Only renaming the first one: ${file}`);
+      }
+
+      let suggestedName = prompt(`Enter new name for ${file} (Max 6 chars + 2 ext):`, file);
+      if (!suggestedName || suggestedName === file) return;
+
+      let newName = promptValidFileName(suggestedName);
+      if (!newName) return;
+
+      const cmd = `REN:${activeDrive}:${file}:${newName}\n`;
+      await writeChar.writeValueWithoutResponse(new TextEncoder().encode(cmd));
+      setTimeout(() => requestList(activeDrive), 500);
+    };
+
+    document.getElementById('btnBackupSingle').onclick = async () => {
+      let dateStr = new Date().toISOString().split('T')[0];
+      let defaultName = `VDISK_BackUP_Disk${activeDrive}_${dateStr}`;
+      let backupName = prompt("Enter Backup Name:", defaultName);
+      if (!backupName) return;
+
+      alert(`Requesting single backup for Disk ${activeDrive} to folder '${backupName}'... (Firmware implementation pending)`);
+      const cmd = `BACKUP:${activeDrive}:${backupName}\n`;
+      if (writeChar) await writeChar.writeValueWithoutResponse(new TextEncoder().encode(cmd));
+    };
+
+    document.getElementById('btnRestoreSingle').onclick = async () => {
+      if (!localDirHandle) {
+        alert("Please select a PC folder containing the backup files first.");
+        return;
+      }
+      if (confirm(`WARNING: Restoring will overwrite Disk ${activeDrive} with the contents of your PC folder. Proceed?`)) {
+        alert("Commencing restore of Disk " + activeDrive + " from PC folder. (Mock implementation)");
+        // Logic to rapidly push all matched localFiles via handleUploadRequest
+      }
+    };
+
+    document.getElementById('btnBackupAll').onclick = async () => {
+      let dateStr = new Date().toISOString().split('T')[0];
+      let defaultName = `VDISK_BackUP_5disk_${dateStr}`;
+      let backupName = prompt("Enter Backup Name for 5-Disk Archive:", defaultName);
+      if (!backupName) return;
+
+      alert(`Requesting full 5-Disk mass backup to folder '${backupName}'... (Firmware implementation pending)`);
+      const cmd = `BACKUP:ALL:${backupName}\n`;
+      if (writeChar) await writeChar.writeValueWithoutResponse(new TextEncoder().encode(cmd));
+    };
+
+    document.getElementById('btnRestoreAll').onclick = async () => {
+      if (!localDirHandle) {
+        alert("Please select a PC folder first.");
+        return;
+      }
+      if (confirm(`CRITICAL WARNING: Mass Restore will COMPLETELY FORMAT EVERY VIRTUAL DISK (1-5) and replace them with contents from the PC folder. This cannot be undone! Are you absolutely sure?`)) {
+        alert("Commencing full 5-Disk mass restore... (Mock implementation)");
+      }
+    };
+
+    // --- Local PC Directory Handling ---
+    let localDirHandle = null;
+    let localFiles = {};
+
+    const btnSelectDir = document.getElementById('btnSelectDir');
+    const fallbackDirInput = document.getElementById('fallbackDirInput');
+    const pcList = document.getElementById('pcList');
+
+    btnSelectDir.onclick = () => {
+      // Bypass the strict Chrome showDirectoryPicker that blocks ~/Downloads
+      // by triggering a classic invisible directory input picker instead
+      fallbackDirInput.click();
+    };
+
+    fallbackDirInput.onchange = (e) => {
+      localDirHandle = true; // Mark as selected for other UI checks
+      pcList.innerHTML = '';
+      localFiles = {};
+
+      const files = e.target.files;
+      if (files.length === 0) {
+        pcList.innerHTML = '<li><i>Folder is empty</i></li>';
+        return;
+      }
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        // webkitRelativePath contains "FolderName/FileName.ext"
+        // We only want top-level files in the selected folder, not deeply nested contents
+        const pathParts = file.webkitRelativePath.split('/');
+        if (pathParts.length === 2) {
+          const name = pathParts[1];
+          localFiles[name] = file;
+
+          const li = document.createElement('li');
+          li.draggable = true;
+          li.innerHTML = `<span>&#128196; ${name}</span><span>PC File</span>`;
+          li.ondragstart = (ev) => {
+            ev.dataTransfer.setData('text/plain', name);
+            ev.dataTransfer.effectAllowed = 'copy';
+          };
+          pcList.appendChild(li);
+        }
+      }
+
+      if (pcList.children.length === 0) {
+        pcList.innerHTML = '<li><i>No top-level files found in folder</i></li>';
+      }
+    };
+
+    // --- PC Browser Drop Target (Download from Virtual Disk) ---
+    const pcBrowser = document.getElementById('pcBrowser');
+    pcBrowser.addEventListener('dragover', e => {
+      e.preventDefault();
+      pcBrowser.classList.add('drag-over');
+    });
+    pcBrowser.addEventListener('dragleave', e => {
+      pcBrowser.classList.remove('drag-over');
+    });
+    pcBrowser.addEventListener('drop', async e => {
+      e.preventDefault();
+      pcBrowser.classList.remove('drag-over');
+
+      const filename = e.dataTransfer.getData('application/x-floppy-file');
+      if (filename) {
+        // We no longer strictly require localDirHandle here because 
+        // Chrome showSaveFilePicker will handle the destination safely
+        alert(`Requesting ${filename} from Floppy ${activeDrive}... Download will start momentarily.`);
+
+        if (writeChar) {
+          const cmd = `GET:${activeDrive}:${filename}\n`;
+          await writeChar.writeValueWithoutResponse(new TextEncoder().encode(cmd));
+        }
+      }
+    });
+
+    // --- Mass Backup/Restore Logic using JSZip ---
+    document.getElementById('btnBackupAll').onclick = async () => {
+      if (!writeChar) { alert("Connect to AirDrive first!"); return; }
+
+      let dateStr = new Date().toISOString().split('T')[0];
+      let defaultName = `VDISK_BackUP_5disk_${dateStr}.zip`;
+
+      // We will loop over all 5 disks, parse their lists, download the chunks, and append them to a JSZip archive
+      alert("Mass Backup requires sequential downloading of all files. This may take several minutes depending on storage size. (Pending full async queue architecture).");
+    };
+
+    document.getElementById('btnBackupSingle').onclick = async () => {
+      alert("Single Disk Backup pending full queue architecture.");
+    };
+
+    document.getElementById('btnRestoreSingle').onclick = async () => {
+      alert("Restore functionality requires unzipping into browser memory and uploading via queue. Pending implementation.");
+    };
+
+    document.getElementById('btnRestoreAll').onclick = async () => {
+      alert("Restore functionality requires unzipping into browser memory and uploading via queue. Pending implementation.");
+    };
+
+    // --- Floppy Drop Target (Upload from PC) ---
+    function setupFloppyDropZones() {
+      document.querySelectorAll('.floppy').forEach(f => {
+        f.addEventListener('dragover', e => {
+          e.preventDefault();
+          if (f.classList.contains('active')) f.classList.add('drag-over');
+        });
+        f.addEventListener('dragleave', e => {
+          f.classList.remove('drag-over');
+        });
+        f.addEventListener('drop', async e => {
+          e.preventDefault();
+          f.classList.remove('drag-over');
+          if (!f.classList.contains('active')) return;
+
+          // 1) Drag from the in-page PC folder list (File System Access handles)
+          const filename = e.dataTransfer.getData('text/plain');
+          if (filename && localFiles[filename]) {
+            handleUploadRequest(localFiles[filename]);
+            return;
+          }
+
+          // 2) Drag straight from Finder / Desktop (OS File objects)
+          const osFiles = e.dataTransfer.files;
+          if (osFiles && osFiles.length > 0) {
+            for (let i = 0; i < osFiles.length; i++) {
+              await handleUploadRequest(osFiles[i]);
+            }
+            return;
+          }
+        });
+      });
+    }
+    setupFloppyDropZones();
+
+    // Validates: Max 6 char name, max 2 char ext.
+    function promptValidFileName(originalName) {
+      let suggestedName = originalName.toUpperCase().replace(/[^A-Z0-9\.]/g, '');
+      let parts = suggestedName.split('.');
+      let name = (parts[0] || "").substring(0, 6);
+      let ext = (parts.length > 1 ? parts[parts.length - 1] : "").substring(0, 2);
+      let newName = `${name}${ext ? '.' + ext : ''}`;
+
+      while (true) {
+        let p = newName.split('.');
+        let n = p[0] || "";
+        let e = p.length > 1 ? p[1] : "";
+
+        let valid = (n.length <= 6 && e.length <= 2 && /^[A-Z0-9]+$/.test(n));
+        if (valid) break;
+
+        newName = prompt(`Model 100 invalid file name.\nMax 6 characters root, 2 characters extension (ex: MYFILE.DO).\nPlease rename:`, newName);
+        if (!newName) return null; // Cancelled
+        newName = newName.toUpperCase();
+      }
+      return newName;
+    }
+
+    async function handleUploadRequest(fileHandle) {
+      if (!writeChar) {
+        alert("Connect AirDrive via Bluetooth first!");
+        return;
+      }
+      if (transferBusy) {
+        alert("A copy is already in progress. Wait for it to finish.");
+        return;
+      }
+      // Handle both new FileSystemHandles and legacy File objects
+      const file = fileHandle.getFile ? await fileHandle.getFile() : fileHandle;
+
+      let finalName = promptValidFileName(file.name);
+      if (!finalName) return; // User cancelled
+
+      transferBusy = true;
+      try {
+        showXfer(`Copying ${finalName} to Disk ${activeDrive}`, 'Reading file…', 0);
+        await yieldUi();
+        let data = new Uint8Array(await file.arrayBuffer());
+        console.log(`Uploading ${finalName} to Drive ${activeDrive}... Total bytes: ${data.length}`);
+
+        // --- MODEL 100 ASCII TEXT VALIDATOR & REPAIR ---
+        let isText = true;
+        let bytesToCheck = Math.min(1000, data.length);
+        for (let i = 0; i < bytesToCheck; i++) {
+          // Binary .BA files contain 0x00 and token strings > 127.
+          if (data[i] > 127 || (data[i] < 32 && ![9, 10, 13, 26].includes(data[i]))) {
+            isText = false; break;
+          }
+        }
+
+        if (isText && finalName.endsWith(".BA")) {
+          alert(`Notice: ${finalName} is actually an ASCII text file, not a compiled binary file! The Model 100 will crash pulling text from a .BA file (i.e. 'Line 17959').\n\nThe AirDrive is automatically renaming this to .DO and fixing the Mac line-endings. On your Model 100, safely load it into BASIC using:\nLOAD "${finalName.replace('.BA', '.DO')}"`);
+          finalName = finalName.substring(0, finalName.length - 3) + ".DO";
+        }
+
+        if (isText || finalName.endsWith(".DO")) {
+          // Convert all PC \n or \r\n to strict Model 100 \r
+          let cleanData = [];
+          for (let i = 0; i < data.length; i++) {
+            if (data[i] === 0x0A) {
+              if (i === 0 || data[i - 1] !== 0x0D) cleanData.push(0x0D);
+            } else {
+              cleanData.push(data[i]);
+            }
+          }
+          if (cleanData.length > 0 && cleanData[cleanData.length - 1] !== 0x1A) {
+            cleanData.push(0x1A); // Proper Model 100 Text EOF marker
+          }
+          data = new Uint8Array(cleanData);
+          console.log(`Normalized text file to ${data.length} bytes (CR line endings)`);
+        }
+
+        showXfer(`Copying ${finalName} to Disk ${activeDrive}`,
+          `0 / ${data.length} bytes`, 0);
+        await yieldUi();
+
+        // PRE-FLIGHT: Delete any existing file first to ensure a clean write!
+        const killCmd = `KILL:${activeDrive}:${finalName}\n`;
+        await writeChar.writeValueWithResponse(new TextEncoder().encode(killCmd));
+
+        const headerStr = `D${activeDrive}${finalName}:`;
+        const headerBytes = new TextEncoder().encode(headerStr);
+        const MAX_PAYLOAD_SIZE = 244 - headerBytes.length; // Max file bytes per packet
+
+        for (let i = 0; i < data.length; i += MAX_PAYLOAD_SIZE) {
+          const chunkData = data.slice(i, i + MAX_PAYLOAD_SIZE);
+          let packet = new Uint8Array(headerBytes.length + chunkData.length);
+          packet.set(headerBytes, 0);
+          packet.set(chunkData, headerBytes.length);
+
+          // Use WithResponse for flawless hardware-paced synchronization (no dropped packets!)
+          await writeChar.writeValueWithResponse(packet);
+
+          const sent = Math.min(i + chunkData.length, data.length);
+          const pct = data.length ? Math.floor((sent / data.length) * 100) : 100;
+          showXfer(`Copying ${finalName} to Disk ${activeDrive}`,
+            `${sent} / ${data.length} bytes`, pct);
+          await yieldUi();
+        }
+
+        showXfer(`Copying ${finalName} to Disk ${activeDrive}`, 'Finishing…', 100);
+        await yieldUi();
+        const eofStr = `\nEOF:${finalName}\n`;
+        await writeChar.writeValueWithResponse(new TextEncoder().encode(eofStr));
+
+        console.log('Upload complete');
+        setTimeout(() => requestList(activeDrive), 500);
+      } catch (err) {
+        console.error('Upload failed:', err);
+        alert(`Copy failed: ${err && err.message ? err.message : err}`);
+      } finally {
+        hideXfer();
+      }
+    }
+
+  </script>
+</body>
+
+</html>

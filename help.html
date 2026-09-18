@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>AirDrive Manager HELP</title>
+    <style>
+        body {
+            background-color: #222;
+            color: #ddd;
+            font-family: 'Courier New', Courier, monospace;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+            line-height: 1.6;
+        }
+
+        h1 {
+            color: #9ea78d;
+            border-bottom: 2px solid #555;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: #87b9ff;
+            margin-top: 30px;
+        }
+
+        code {
+            background: #111;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #ffeb3b;
+        }
+
+        .note {
+            background: #333;
+            border-left: 4px solid #87b9ff;
+            padding: 15px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Porta MT: AirDrive Manager - User Guide</h1>
+
+    <h2>1. Getting Started</h2>
+    <p>The AirDrive Manager connects to your Virtual Disk drive via Web Bluetooth. Ensure your device is powered on, and
+        click the <strong>Connect AirDrive</strong> button. You must give the browser permission to connect to the
+        Bluetooth device.</p>
+
+    <div class="note">
+        <strong>APPLE MAC USERS - CRITICAL BLUETOOTH STEP:</strong><br />
+        Because the AirDrive acts as a Keyboard hardware device, Apple macOS will aggressively "lock" the device for
+        security reasons if you pair it via the main Apple System Settings. If the Mac System owns the device, Chrome
+        will be permanently blocked from seeing the File System.<br /><br />
+        <strong>Fix:</strong> Open your Mac Bluetooth Settings, find the AirDrive, and click "Forget This Device".
+        <em>Do not pair it there.</em> Instead, return to this webpage and click "Connect AirDrive" and pair it
+        exclusively through the secure browser popup!
+    </div>
+
+    <h2>Supported Platforms & Browsers</h2>
+    <p>The AirDrive Manager uses the <strong>Web Bluetooth API</strong> and the <strong>File System Access API</strong>.
+        Support varies across devices:</p>
+    <ul>
+        <li><strong>macOS / Windows / Linux / ChromeOS:</strong>
+            <ul>
+                <li><strong>Google Chrome:</strong> (Recommended) Full Support.</li>
+                <li><strong>Microsoft Edge:</strong> Full Support.</li>
+                <li><strong>Opera / Brave:</strong> Generally Supported.</li>
+                <li><span style="color:#ff6b6b">Safari & Firefox: Not Supported.</span></li>
+            </ul>
+        </li>
+        <li><strong>Android:</strong>
+            <ul>
+                <li><strong>Google Chrome:</strong> Supported for file management. Note: Modern "Save File" pickers may
+                    fall back to standard downloads.</li>
+            </ul>
+        </li>
+        <li><strong>iPhone / iPad (iOS):</strong>
+            <ul>
+                <li><span style="color:#ff6b6b">Safari, Chrome, & Edge: Not Supported</span> (Apple blocks Web Bluetooth
+                    in these apps).</li>
+                <li><strong>Bluefy Browser (App Store):</strong> Works as a workaround to enable Bluetooth within a
+                    browser environment on iOS.</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h2>2. Navigating Virtual Disks</h2>
+    <p>The AirDrive supports 5 distinct virtual floppy disks arranged in a carousel. Click any disk in the background
+        stack to bring it to the front and make it the <strong>Active Drive</strong>.</p>
+    <ul>
+        <li>The active drive's files will automatically list in the white center label.</li>
+        <li>Click any file in the label to highlight and select it for commands.</li>
+    </ul>
+
+    <h2>3. Managing Your PC Directory</h2>
+    <p>The black box at the bottom of the screen allows you to select a local folder on your computer.</p>
+    <ul>
+        <li>Click <strong>Select PC Folder</strong> to choose a working directory (like 'Downloads').</li>
+        <li>Files from this folder can be safely synchronized with your virtual disks.</li>
+    </ul>
+
+    <h2>4. Uploading & Downloading Files</h2>
+    <p><strong>To copy a file to the AirDrive:</strong> Either drag a file from your connected PC Directory list
+        UP to the active blue floppy disk, <strong>or drag a file directly from Finder/Desktop</strong> onto the
+        active (front) disk. You will be prompted to fit the name to Model 100 limits (6.2).</p>
+    <p><strong>To copy a file to your PC:</strong> You can either click the file in the virtual floppy and press
+        <code>COPY Selected Files to PC</code>, OR click and drag the file from the topmost virtual disk DOWN into the
+        black PC directory area.
+    </p>
+
+    <h2>5. Virtual Disk Commands</h2>
+    <p>Use the control panel on the right side of the screen to manage the files currently on the active Virtual Disk:
+    </p>
+    <ul>
+        <li><strong>RENAME Selected File:</strong> Change the name of the file (limited to 6 character name + 2
+            character extension per Model 100 specifications).</li>
+        <li><strong>DELETE/KILL Selected File:</strong> Permanently delete the file from the AirDrive hardware.</li>
+        <li><strong style="color:#ff6b6b">FORMAT Select Virtual Disk:</strong> Instantly wipe all files currently
+            residing on the active virtual disk number. This cannot be undone!</li>
+    </ul>
+
+    <div class="note">
+        <strong>Note:</strong> Features such as Mass Backup and Mass Restore are still pending firmware implementation
+        and currently act as mock UI operations. Check back for future updates!
+    </div>
+
+    <h2>6. Troubleshooting: macOS Bluetooth Won't Reconnect</h2>
+    <p>On macOS, Web Bluetooth sometimes drops the <strong>Model T AirDrive</strong> session and will not re-establish
+        it. The browser picker may show nothing, or Connect appears to hang, even though the AirDrive is on and
+        advertising.</p>
+    <p>A reliable workaround:</p>
+    <ol>
+        <li>Open <strong>System Settings &rarr; Bluetooth</strong>.</li>
+        <li>Find <strong>Model T AirDrive</strong> in the device list.</li>
+        <li>Click <strong>Forget This Device</strong> (or Forget / Remove).</li>
+        <li>Return to this webpage and click <strong>Connect AirDrive</strong>.</li>
+        <li>Pair again from the <em>browser</em> popup &mdash; do not pair it from macOS Settings.</li>
+    </ol>
+    <p>After forgetting, the AirDrive should show up again in the Chrome/Edge Bluetooth picker. This is a macOS / HID
+        ownership quirk, not a dead radio; keep this step handy whenever a previously working connection refuses to
+        come back.</p>
+
+</body>
+
+</html>
