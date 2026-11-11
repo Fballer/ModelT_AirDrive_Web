@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>AirDrive update</title>
+  <style>
+    body {
+      background: #222;
+      color: #9ea78d;
+      font-family: monospace;
+      margin: 0;
+      padding: 24px 16px 48px;
+      display: flex;
+      justify-content: center;
+    }
+
+    main {
+      width: min(640px, 100%);
+    }
+
+    h1 {
+      color: #d7dcc8;
+      font-size: 22px;
+      margin: 0 0 8px;
+    }
+
+    a {
+      color: #87b9ff;
+    }
+
+    p {
+      line-height: 1.45;
+    }
+
+    button {
+      background: #2a4d87;
+      color: #9ea78d;
+      border: 2px solid #9ea78d;
+      padding: 10px 14px;
+      font-family: monospace;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: default;
+    }
+
+    button.link {
+      background: transparent;
+      border: none;
+      color: #87b9ff;
+      padding: 0;
+      font-weight: normal;
+      text-decoration: underline;
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 14px 0;
+    }
+
+    .card {
+      background: #111;
+      border: 3px solid #2a4d87;
+      padding: 16px;
+      margin-top: 16px;
+    }
+
+    .label {
+      margin: 0;
+      color: #6e7564;
+    }
+
+    .date {
+      margin: 4px 0 0;
+      font-size: 28px;
+      color: #d7dcc8;
+    }
+
+    #result {
+      min-height: 2.8em;
+      color: #d7dcc8;
+    }
+
+    #status {
+      min-height: 1.4em;
+      color: #d7dcc8;
+    }
+
+    #track {
+      height: 16px;
+      background: #333;
+      border: 1px solid #9ea78d;
+      margin-top: 8px;
+    }
+
+    #fill {
+      height: 100%;
+      width: 0;
+      background: #2a4d87;
+    }
+
+    details {
+      margin-top: 22px;
+      color: #6e7564;
+    }
+
+    summary {
+      cursor: pointer;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <p><a href="airdrive.html">Back</a></p>
+    <h1>AirDrive update</h1>
+    <p>See if your AirDrive is current, and install a newer version if it is not. The files on your 5 virtual floppy drives stay. They are not affected. Use Chrome or Edge on a computer, and leave the AirDrive plugged in until this page says the update is finished.</p>
+
+    <div class="card">
+      <p class="label">Latest version</p>
+      <p class="date" id="publishedDate" data-edition="2026-11-10">November 10, 2026</p>
+      <p class="label">What's new</p>
+      <p id="whatsNew">New version highlights: OTA firmware updates and firmware checks. Updated game names to reduce any legal/trademark conflicts. Improved AirDrive wake-up process, so less chance of Disk not ready errors during menu loads. Highly recommend you do this update.</p>
+      <p id="result">Connect your AirDrive to see if it already has this version.</p>
+      <div class="row">
+        <button type="button" id="btnCheck">Check my AirDrive</button>
+        <button type="button" id="btnInstall" hidden>Install this update</button>
+        <button type="button" id="btnContinue" hidden>Continue</button>
+      </div>
+      <p id="status"></p>
+      <div id="track"><div id="fill"></div></div>
+    </div>
+
+    <details>
+      <summary>The update already restarted my AirDrive</summary>
+      <p>In the Bluetooth list, choose <strong>AdaDFU</strong>. That is your AirDrive while it is updating.</p>
+      <button type="button" id="btnResume">Continue the update</button>
+    </details>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="airdrive_ota.js"></script>
+  <script>
+    const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const dateEl = document.getElementById("publishedDate");
+    const resultEl = document.getElementById("result");
+    const statusEl = document.getElementById("status");
+    const fillEl = document.getElementById("fill");
+    const btnCheck = document.getElementById("btnCheck");
+    const btnInstall = document.getElementById("btnInstall");
+    const btnContinue = document.getElementById("btnContinue");
+    const btnResume = document.getElementById("btnResume");
+
+    let image = null;
+    let publishedEdition = document.getElementById("publishedDate").dataset.edition || "2026-11-10";
+    let airDevice = null;
+    let busy = false;
+
+    function pretty(iso) {
+      if (!iso || iso.length < 10) return "";
+      const y = Number(iso.slice(0, 4));
+      const m = Number(iso.slice(5, 7));
+      const d = Number(iso.slice(8, 10));
+      if (!y || !m || !d) return iso.slice(0, 10);
+      return MONTHS[m - 1] + " " + d + ", " + y;
+    }
+
+    function setStatus(text, pct) {
+      statusEl.textContent = text || "";
+      if (pct != null) fillEl.style.width = Math.max(0, Math.min(100, pct)) + "%";
+    }
+
+    function setBusy(on) {
+      busy = on;
+      btnCheck.disabled = on;
+      btnInstall.disabled = on;
+      btnContinue.disabled = on;
+      btnResume.disabled = on;
+    }
+
+    function showInstall(on) {
+      btnInstall.hidden = !(on && image);
+      btnContinue.hidden = true;
+    }
+
+    async function loadPublished() {
+      const infoRes = await fetch("airdrive_firmware/airdrive_info.json", { cache: "no-store" });
+      if (!infoRes.ok) throw new Error("missing");
+      const info = await infoRes.json();
+      const zipRes = await fetch("airdrive_firmware/" + info.file, { cache: "no-store" });
+      if (!zipRes.ok) throw new Error("missing");
+      image = await AirDriveOta.parseZip(await zipRes.arrayBuffer());
+      publishedEdition = info.edition || image.edition;
+      dateEl.textContent = info.published || pretty(publishedEdition);
+      if (info.whatsNew) document.getElementById("whatsNew").textContent = info.whatsNew;
+    }
+
+    loadPublished().catch(() => {
+      dateEl.textContent = pretty(publishedEdition);
+      if (location.protocol === "file:") {
+        resultEl.textContent = "The date above is the newest version published for AirDrive. It is not a reading from your AirDrive. This page was opened as a saved file, so the update itself did not download. Open it from the AirDrive website in Chrome to install it. You can still check your AirDrive.";
+      } else {
+        resultEl.textContent = "The date above is the newest version published for AirDrive. It is not a reading from your AirDrive. The update file did not download, so it cannot be installed until you reload this page from the AirDrive website. You can still check your AirDrive.";
+      }
+    });
+
+    function describeDevice(deviceEdition) {
+      const latest = pretty(publishedEdition);
+      if (!deviceEdition) {
+        resultEl.textContent = "Your AirDrive does not report a version yet. The newest published version is " + latest + "." + (image ? "" : " The update file is not on this page, so it cannot be installed from here.");
+        showInstall(true);
+        return;
+      }
+      const yours = pretty(deviceEdition);
+      if (deviceEdition === publishedEdition) {
+        resultEl.textContent = "Your AirDrive is up to date. It has the " + yours + " version.";
+        showInstall(false);
+        return;
+      }
+      if (deviceEdition > publishedEdition) {
+        resultEl.textContent = "Your AirDrive is newer (" + yours + ") than the version on this page (" + latest + "). Leave it as it is.";
+        showInstall(false);
+        return;
+      }
+      resultEl.textContent = "Your AirDrive has the " + yours + " version. A newer one was published " + latest + "." + (image ? "" : " The update file is not on this page, so it cannot be installed from here.");
+      showInstall(true);
+    }
+
+    btnCheck.onclick = async () => {
+      if (!navigator.bluetooth) {
+        resultEl.textContent = "Open this page in Chrome or Edge on a computer.";
+        return;
+      }
+      setBusy(true);
+      showInstall(false);
+      setStatus("Choose your AirDrive in the list.", 0);
+      try {
+        airDevice = await AirDriveOta.pickAirDrive();
+        setStatus("Reading the version on your AirDrive…", 0);
+        const deviceEdition = await AirDriveOta.readEdition(airDevice);
+        describeDevice(deviceEdition);
+        setStatus("", 0);
+      } catch (err) {
+        if (err && err.name === "NotFoundError") resultEl.textContent = "No AirDrive was selected.";
+        else resultEl.textContent = err.message || "Could not read your AirDrive.";
+      } finally {
+        setBusy(false);
+      }
+    };
+
+    btnInstall.onclick = async () => {
+      if (!image) return;
+      if (!navigator.bluetooth) {
+        resultEl.textContent = "Open this page in Chrome or Edge on a computer.";
+        return;
+      }
+      setBusy(true);
+      setStatus("Restarting your AirDrive…", 5);
+      try {
+        if (!airDevice) airDevice = await AirDriveOta.pickAirDrive();
+        await AirDriveOta.rebootToDfu(airDevice);
+        resultEl.textContent = "Your AirDrive is restarting. When the next list appears, choose AdaDFU. That is your AirDrive while it updates.";
+        btnInstall.hidden = true;
+        btnContinue.hidden = false;
+        setStatus("", 8);
+      } catch (err) {
+        if (err && err.name === "NotFoundError") resultEl.textContent = "No AirDrive was selected.";
+        else resultEl.textContent = err.message || "The update did not start.";
+      } finally {
+        setBusy(false);
+      }
+    };
+
+    async function sendUpdate() {
+      if (!image) return;
+      setBusy(true);
+      setStatus("Choose AdaDFU in the list.", 8);
+      try {
+        const device = await AirDriveOta.pickDfu();
+        await AirDriveOta.flashDfu(device, image, (pct, text) => setStatus(text, pct));
+        resultEl.textContent = "Update finished. Your AirDrive has the " + pretty(image.edition || publishedEdition) + " version. Your files were kept.";
+        btnContinue.hidden = true;
+        btnInstall.hidden = true;
+        setStatus("You can unplug the AirDrive when it shows up again in the disk manager.", 100);
+      } catch (err) {
+        if (err && err.name === "NotFoundError") {
+          resultEl.textContent = "AdaDFU was not selected. If it is still in the list, click Continue.";
+        } else {
+          resultEl.textContent = (err.message || "The update did not finish.") + " Leave the AirDrive plugged in. If AdaDFU is still in the list, click Continue.";
+        }
+        btnContinue.hidden = false;
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    btnContinue.onclick = sendUpdate;
+    btnResume.onclick = () => {
+      if (!image) {
+        resultEl.textContent = "The latest version could not be loaded. Reload this page.";
+        return;
+      }
+      btnContinue.hidden = false;
+      resultEl.textContent = "In the Bluetooth list, choose AdaDFU. That is your AirDrive while it is updating.";
+      sendUpdate();
+    };
+  </script>
+</body>
+
+</html>

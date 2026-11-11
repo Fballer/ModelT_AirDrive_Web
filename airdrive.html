@@ -47,6 +47,17 @@
       background-color: #1a355f;
     }
 
+    button.quiet {
+      background-color: #2a2a2a;
+      color: #b0b0b0;
+      border-color: #3a3a3a;
+      font-weight: normal;
+    }
+
+    button.quiet:hover {
+      background-color: #333333;
+    }
+
     input[type="file"] {
       display: none;
     }
@@ -352,7 +363,8 @@
   <div class="controls">
     <button id="btnConnect">Connect AirDrive</button>
     <button id="btnRefresh" disabled>Refresh Active Drive</button>
-    <button id="btnHelp" onclick="window.open('help.html', '_blank')">HELP File</button>
+    <button id="btnHelp" onclick="window.open('https://www.portacoco.com/airdrive_help.html', '_blank')">HELP File</button>
+    <button id="btnOta" class="quiet" onclick="window.open('https://www.portacoco.com/airdrive_ota.html', '_blank')">Check for updates</button>
   </div>
 
   <div class="main-area">
