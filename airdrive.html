@@ -82,8 +82,7 @@
       color: #6e6e6e;
       border-color: #4a4a4a;
       font-weight: normal;
-      cursor: not-allowed;
-      pointer-events: none;
+      cursor: pointer;
     }
 
     input[type="file"] {
@@ -408,7 +407,7 @@
     </span>
     <button id="btnRefresh" disabled>Refresh Active Drive</button>
     <button id="btnHelp" onclick="window.open('https://www.portacoco.com/airdrive_help.html', '_blank')">HELP File</button>
-    <button id="btnOta" class="quiet" type="button" disabled>Check for updates</button>
+    <button id="btnOta" class="quiet" type="button" onclick="location.href='airdrive_ota.html'">Check for updates</button>
   </div>
 
   <div class="main-area">
