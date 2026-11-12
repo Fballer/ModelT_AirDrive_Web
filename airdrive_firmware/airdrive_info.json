@@ -1,14 +1,14 @@
 {
   "file": "airdrive_app.zip",
   "label": "Published AirDrive firmware",
-  "bytes": 229724,
+  "bytes": 229732,
   "device_type": 82,
   "softdevice": "0x00B6",
-  "sha256": "cc097b7393c0c827db5249eb2c3d03683f3664f3241978dc60a881eddb2258b0",
-  "edition": "2026-11-13",
-  "published": "November 13, 2026",
-  "whatsNew": "New version highlights: OTA firmware updates and firmware checks. Updated game names to reduce any legal/trademark conflicts. Improved AirDrive wake-up process, so less chance of Disk not ready errors during menu loads. The address shown while TS-DOS loads is portacoco.com/airdrive.html. Highly recommend you do this update.",
-  "built": "2026-11-12T17:53:14Z",
+  "sha256": "984a96eb64b33c4ad59f85790342ab63c64bb88fb076291e281cb6443d6ce219",
+  "edition": "2026-11-14",
+  "published": "November 14, 2026",
+  "whatsNew": "New version highlights: OTA firmware updates and firmware checks. Updated game names to reduce any legal/trademark conflicts. Improved AirDrive wake-up process, so less chance of Disk not ready errors during menu loads. The address shown while TS-DOS loads is portacoco.com/airdrive.html. Block-TRS 100 now shows the 1 on the gameplay screen. Highly recommend you do this update.",
+  "built": "2026-11-12T18:55:37Z",
   "source": "firmware.zip",
   "note": "Application only. Does not include the five virtual disks."
 }
