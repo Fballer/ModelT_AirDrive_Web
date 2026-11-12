@@ -37,6 +37,28 @@
       text-align: center;
     }
 
+    .stay, .done {
+      padding: 16px 14px;
+      margin: 14px 0 0;
+      font-size: 18px;
+      font-weight: bold;
+      line-height: 1.35;
+      text-align: center;
+    }
+
+    .stay {
+      background: #5a4a12;
+      color: #fff4cc;
+      border: 4px solid #ffd24a;
+    }
+
+    .done {
+      background: #14331c;
+      color: #e7ffe8;
+      border: 4px solid #3dff7a;
+      text-align: left;
+    }
+
     a {
       color: #87b9ff;
     }
@@ -226,6 +248,8 @@
       <p id="result">Connect your AirDrive to see if it already has this version.</p>
       <button type="button" id="btnInstall" hidden>Install this update</button>
       <button type="button" id="btnContinue" hidden>Select AirDrive</button>
+      <p id="stay" class="stay" hidden>Stay on this page until it says the update is finished. Do not press Back, reload, or any other button. Do not press any buttons on the AirDrive. This takes about 3 minutes.</p>
+      <p id="done" class="done" hidden></p>
       <div id="track"><div id="fill"></div><div id="pct">0%</div></div>
     </div>
 
@@ -237,7 +261,7 @@
   </main>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="airdrive_ota.js?v=20261113d"></script>
+  <script src="airdrive_ota.js?v=20261113e"></script>
   <script>
     const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     const dateEl = document.getElementById("publishedDate");
@@ -245,6 +269,8 @@
     const statusEl = document.getElementById("status");
     const fillEl = document.getElementById("fill");
     const pctEl = document.getElementById("pct");
+    const stayEl = document.getElementById("stay");
+    const doneEl = document.getElementById("done");
     const updateCard = document.getElementById("updateCard");
     const betaGuide = document.getElementById("betaGuide");
     const btnCheck = document.getElementById("btnCheck");
@@ -291,6 +317,24 @@
     function showBeta(on) {
       betaGuide.hidden = !on;
       updateCard.hidden = on;
+    }
+
+    function showStay(on) {
+      stayEl.hidden = !on;
+      if (on) doneEl.hidden = true;
+    }
+
+    function finishMessage() {
+      const when = pretty(image.edition || publishedEdition);
+      return "Update finished. Your AirDrive has the " + when + " version. Your files were kept. You still need to reload AIRDRV.BA and TSLOAD.CO with the Install process. On the Model 100, 102, or 200, in BASIC type KILL \"AIRDRV.BA\" and press Enter, then KILL \"TSLOAD.CO\" and press Enter. Plug the AirDrive into the computer. On a 100 or 102, type RUN \"COM:98N1E\" and short-press Install. On a 200, type RUN \"COM:98N1ENN\" and hold Install for 2 seconds. When that finishes, run AIRDRV.BA.";
+    }
+
+    function showFinished() {
+      showStay(false);
+      doneEl.textContent = finishMessage();
+      doneEl.hidden = false;
+      resultEl.textContent = finishMessage();
+      setStatus("Update finished. Reload AIRDRV.BA and TSLOAD.CO with the Install process.", 100);
     }
 
     async function loadPublished() {
@@ -355,10 +399,10 @@
             return;
           }
           showBeta(false);
-          resultEl.textContent = "This AirDrive is in the middle of an update. Sending the firmware now.";
+          resultEl.textContent = "This AirDrive is in the middle of an update. Sending the firmware now. Stay on this page. Do not press any buttons on the AirDrive. This takes about 3 minutes.";
+          showStay(true);
           await AirDriveOta.flashDfu(airDevice, image, (pct, text) => setStatus(text, pct));
-          resultEl.textContent = "Update finished. Your AirDrive has the " + pretty(image.edition || publishedEdition) + " version. Your files were kept. On the Model 100, 102, or 200, delete AIRDRV.BA and TSLOAD.CO, then run Install again so the computer gets the new programs.";
-          setStatus("You can unplug the AirDrive when it shows up again as Model T AirDrive.", 100);
+          showFinished();
           return;
         }
         setStatus("Reading the version on your AirDrive…", 0);
@@ -368,6 +412,7 @@
       } catch (err) {
         if (err && err.name === "NotFoundError") resultEl.textContent = "Nothing was selected. Click Check my AirDrive. Select Model T AirDrive, or AirDrive if an update already started.";
         else resultEl.textContent = err.message || "Could not read your AirDrive.";
+        showStay(false);
         setStatus("", 0);
       } finally {
         setBusy(false);
@@ -396,16 +441,17 @@
     btnContinue.onclick = async () => {
       if (!image) return;
       setBusy(true);
-      setStatus("A Bluetooth list is open. Select AirDrive, then Pair.", 8);
+      setStatus("A Bluetooth list is open. Select AirDrive, then Pair. Then stay on this page for about 3 minutes.", 8);
+      showStay(true);
       try {
         const device = await AirDriveOta.pickDfu();
         await AirDriveOta.flashDfu(device, image, (pct, text) => setStatus(text, pct));
-        resultEl.textContent = "Update finished. Your AirDrive has the " + pretty(image.edition || publishedEdition) + " version. Your files were kept. On the Model 100, 102, or 200, delete AIRDRV.BA and TSLOAD.CO, then run Install again so the computer gets the new programs.";
         btnContinue.hidden = true;
-        setStatus("You can unplug the AirDrive when it shows up again as Model T AirDrive.", 100);
+        showFinished();
       } catch (err) {
-        resultEl.textContent = (err.message || "The update did not finish.") + " Leave it plugged in. If AirDrive is still in the list, click Select AirDrive.";
+        resultEl.textContent = (err.message || "The update did not finish.") + " Leave it plugged in. Do not press buttons on the AirDrive. If AirDrive is still in the list, click Select AirDrive.";
         btnContinue.hidden = false;
+        showStay(false);
         setStatus("", 8);
       } finally {
         setBusy(false);
