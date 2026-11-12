@@ -11,14 +11,16 @@ Your floppy files should stay. Save them on your computer first (just in case).
 
 3. Pull the PCB board up slightly to access the USB port. It is just a pressure fit, so you could use a small screwdriver to help lift it up a bit, and once it comes up slightly, stop. The battery connectors stay in place (there is enough wire to lift it without removing these wires). With the PCB up, connect a USB-C cable to your Windows computer. The cable must do data as well as power. A power-only cable will not work.
 
-4. Use a Windows 10 or 11 computer. This zip is AirDrive Setup. It contains airdrive_setup.bat, the firmware, the updater, and this instruction file.
+4. Use a Windows 10 or 11 computer. This zip is AirDrive Setup. The only program is airdrive_setup.bat. Run that file. The zip also contains the firmware, the updater, and this instruction file.
 
 5. Plug the USB cable from the AirDrive into that Windows computer.
 
 6. Press the reset button twice, quickly. A drive named NICENANO appears.
 
-7. Unzip the file, then run airdrive_setup.bat. A pop-up warning may say this program is not safe. It is safe. The high Microsoft registration fee to remove this warning has not been paid. The program copies the firmware, then asks you to press reset twice again, then copies the updater. Leave the cable plugged in until it says the AirDrive is finished.
+7. Unzip the file. Run airdrive_setup.bat. That is the only setup program. A pop-up warning may say this program is not safe. It is safe. The high Microsoft registration fee to remove this warning has not been paid. The program copies the firmware, then asks you to press reset twice again, then copies the updater. Leave the cable plugged in until it says the AirDrive is finished.
 
 8. When it is done, unplug the USB cable. Close the case. Press the PCB down somewhat hard so it pressure-fits again. Tuck in the battery wires so the lid closes fully. Replace the screw and the batteries, and turn the AirDrive on.
 
-9. Return to the AirDrive update page and click Check my AirDrive again. A date means the one-time setup worked. You are done.
+9. Return to the AirDrive update page and click Check my AirDrive again. A date means the one-time setup worked.
+
+10. On the Model 100, 102, or 200, the new features also need a fresh install of the programs. In BASIC, type KILL "AIRDRV.BA" and press Enter, then KILL "TSLOAD.CO" and press Enter. Plug the AirDrive into the computer. On a 100 or 102, type RUN "COM:98N1E" and short-press Install. On a 200, type RUN "COM:98N1ENN" and hold Install for 2 seconds. When it finishes, run AIRDRV.BA.

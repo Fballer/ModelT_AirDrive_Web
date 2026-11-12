@@ -127,12 +127,12 @@ Modules already in the field keep showing the address that was in the firmware w
 
 `airdrive_setup.zip` is the program used for the ten beta units and for every new AirDrive before the case is closed. It is not a factory image. It does not load the five disks.
 
-On Windows, the owner unzips it and runs `airdrive_setup.bat`. That file runs `airdrive_setup.ps1`. The program waits for a drive named **NICENANO**, copies `airdrive_firmware.uf2`, waits for the drive to leave, asks for a second double-press of reset, then copies `airdrive_bootloader.uf2`.
+On Windows, the owner unzips it and runs `airdrive_setup.bat`. That is the only program in the zip. The program waits for a drive named **NICENANO**, copies `airdrive_firmware.uf2`, waits for the drive to leave, asks for a second double-press of reset, then copies `airdrive_bootloader.uf2`. When it finishes, the owner deletes `AIRDRV.BA` and `TSLOAD.CO` on the Model 100, 102, or 200 and runs Install again.
 
-On a Mac, the same folder can be tested with:
+On a Mac, the same two UF2 files can be copied with:
 
 ```
-python3 airdrive_setup.py
+python3 scripts/airdrive_setup_mac.py
 ```
 
 Use an open board. Back up all five disks first. The updater file is staged in flash that overlaps the end of the disk storage, so a disk can look wrong afterward. Restore from the backup if that happens. Do not pull power while either file is copying. Replacing the updater is the one step that, if interrupted, can need a hardware programmer rather than the USB drive.

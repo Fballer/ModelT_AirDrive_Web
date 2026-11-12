@@ -12,7 +12,7 @@ import sys
 import time
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parent
+HERE = Path(__file__).resolve().parents[1]
 FIRMWARE = HERE / "airdrive_firmware.uf2"
 UPDATER = HERE / "airdrive_bootloader.uf2"
 

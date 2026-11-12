@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Pack airdrive_setup.zip for the one-time Windows installer.
 
-The zip is what the beta page downloads. It holds the Windows program, the
-Mac test script, the help text, the application UF2, and the updater UF2.
+The zip is what the beta page downloads. It holds one Windows program,
+the help text, the application UF2, and the updater UF2.
 Run this from MODEL_T_AirDrive_Web after those files are in this folder.
 """
 
@@ -19,8 +19,6 @@ APP_FAMILY = 0xADA52840
 
 MEMBERS = (
     "airdrive_setup.bat",
-    "airdrive_setup.ps1",
-    "airdrive_setup.py",
     "airdrive_setup_help.txt",
     "airdrive_firmware.uf2",
     "airdrive_bootloader.uf2",
