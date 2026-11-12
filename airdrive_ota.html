@@ -310,15 +310,28 @@
       setBusy(true);
       showInstall(false);
       showBeta(false);
-      setStatus("A Bluetooth list is open. Select Model T AirDrive, then Pair.", 0);
+      setStatus("A Bluetooth list is open. Select Model T AirDrive. If an update already started, select AirDrive.", 0);
       try {
-        airDevice = await AirDriveOta.pickAirDrive();
+        airDevice = await AirDriveOta.pickCheck();
+        if (await AirDriveOta.isUpdater(airDevice)) {
+          if (!image) {
+            resultEl.textContent = "This AirDrive is in the middle of an update. Reload this page from the website, then click Check my AirDrive and select AirDrive.";
+            setStatus("", 0);
+            return;
+          }
+          showBeta(false);
+          resultEl.textContent = "This AirDrive is in the middle of an update. Sending the firmware now.";
+          await AirDriveOta.flashDfu(airDevice, image, (pct, text) => setStatus(text, pct));
+          resultEl.textContent = "Update finished. Your AirDrive has the " + pretty(image.edition || publishedEdition) + " version. Your files were kept. On the Model 100, 102, or 200, delete AIRDRV.BA and TSLOAD.CO, then run Install again so the computer gets the new programs.";
+          setStatus("You can unplug the AirDrive when it shows up again as Model T AirDrive.", 100);
+          return;
+        }
         setStatus("Reading the version on your AirDrive…", 0);
         const deviceEdition = await AirDriveOta.readEdition(airDevice);
         describeDevice(deviceEdition);
         setStatus("", 0);
       } catch (err) {
-        if (err && err.name === "NotFoundError") resultEl.textContent = "Model T AirDrive was not selected. Click Check my AirDrive. In the list, select Model T AirDrive, then Pair.";
+        if (err && err.name === "NotFoundError") resultEl.textContent = "Nothing was selected. Click Check my AirDrive. Select Model T AirDrive, or AirDrive if an update already started.";
         else resultEl.textContent = err.message || "Could not read your AirDrive.";
         setStatus("", 0);
       } finally {

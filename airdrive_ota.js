@@ -83,6 +83,9 @@
       if (left <= 0) fail("Timed out waiting for the bootloader.");
       const msg = await queue.next(left);
       if (msg[0] === OP_RESPONSE && msg[2] !== 1) {
+        if (msg[2] === 2) {
+          fail("The updater is still on the last attempt. Unplug the AirDrive, plug it back in, click Check my AirDrive, and select AirDrive.");
+        }
         fail("Bootloader rejected the update (" + (ERRORS[msg[2]] || ("code " + msg[2])) + ").");
       }
       if (kind === "response" && msg[0] === OP_RESPONSE && msg[1] === proc && msg[2] === 1) return msg;
@@ -306,6 +309,35 @@
     });
   }
 
+  function pickCheck() {
+    return navigator.bluetooth.requestDevice({
+      filters: [
+        { services: [WEBFS_SERVICE] },
+        { name: "AirDrive" },
+        { services: [DFU_SERVICE] }
+      ],
+      optionalServices: [WEBFS_SERVICE, DFU_SERVICE, DFU_CONTROL, DFU_PACKET]
+    });
+  }
+
+  async function isUpdater(device) {
+    const name = device.name || "";
+    if (name === "AirDrive") return true;
+    if (name.indexOf("Model T") === 0) return false;
+    if (!device.gatt.connected) await device.gatt.connect();
+    try {
+      await device.gatt.getPrimaryService(DFU_SERVICE);
+    } catch (e) {
+      return false;
+    }
+    try {
+      await device.gatt.getPrimaryService(WEBFS_SERVICE);
+      return false;
+    } catch (e) {
+      return true;
+    }
+  }
+
   function pickDfu() {
     return navigator.bluetooth.requestDevice({
       filters: [{ name: "AirDrive" }, { services: [DFU_SERVICE] }]
@@ -319,6 +351,8 @@
     rebootToDfu: rebootToDfu,
     flashDfu: flashDfu,
     pickAirDrive: pickAirDrive,
+    pickCheck: pickCheck,
+    isUpdater: isUpdater,
     pickDfu: pickDfu
   };
 })(window);
