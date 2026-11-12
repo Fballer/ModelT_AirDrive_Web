@@ -58,6 +58,14 @@
       display: block;
     }
 
+    .tip.above .tip-box {
+      top: auto;
+      bottom: calc(100% + 8px);
+      left: auto;
+      right: 0;
+      width: 360px;
+    }
+
     button {
       background-color: #2a4d87;
       /* Floppy Blue */
@@ -263,6 +271,8 @@
       border-bottom: 2px solid #555;
       padding-bottom: 15px;
       margin-bottom: 15px;
+      position: relative;
+      z-index: 5;
     }
 
     .pc-header h2 {
@@ -432,8 +442,10 @@
       <h2>PC FOLDER: <span style="font-size: 14px; font-weight: normal; color: #ccc;">(Drag and Drop Files onto Disk
           Label above)</span></h2>
       <div class="pc-actions">
-        <button id="btnSelectDir" style="font-size: 13px; padding: 6px 12px; white-space: nowrap;">Select
-          Folder</button>
+        <span class="tip above">
+          <button id="btnSelectDir" style="font-size: 13px; padding: 6px 12px; white-space: nowrap;">Select Folder</button>
+          <span class="tip-box">Chrome then asks you to press Upload. It may say hundreds of files will be uploaded, and to do that only if you trust this site. Press Upload. Chrome is only reading the file names in that folder on this computer. Nothing is copied to the AirDrive until you drag a file onto a disk.</span>
+        </span>
         <input type="file" id="fallbackDirInput" webkitdirectory directory multiple style="display: none;" />
         <input type="file" id="restoreZipInput" accept=".zip,application/zip" style="display: none;" />
       </div>
