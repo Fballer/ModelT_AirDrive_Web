@@ -37,6 +37,34 @@
       gap: 15px;
     }
 
+    .tip {
+      position: relative;
+      display: inline-block;
+      z-index: 30;
+    }
+
+    .tip-box {
+      display: none;
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      width: 320px;
+      padding: 12px;
+      background: #111;
+      color: #fff;
+      border: 3px solid #ffd24a;
+      z-index: 30;
+      text-align: left;
+      font-weight: normal;
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    .tip:hover .tip-box,
+    .tip:focus-within .tip-box {
+      display: block;
+    }
+
     button {
       background-color: #2a4d87;
       /* Floppy Blue */
@@ -368,7 +396,10 @@
   <h1>Porta MT: AirDrive Manager</h1>
 
   <div class="controls">
-    <button id="btnConnect">Connect AirDrive</button>
+    <span class="tip">
+      <button id="btnConnect">Connect AirDrive</button>
+      <span class="tip-box">If Model T AirDrive is not in the Bluetooth list, press reset once. On Windows, if Bluetooth settings already has it as a keyboard, remove it there, then pair from this page. A Mac or Android phone does not need that step.</span>
+    </span>
     <button id="btnRefresh" disabled>Refresh Active Drive</button>
     <button id="btnHelp" onclick="window.open('https://www.portacoco.com/airdrive_help.html', '_blank')">HELP File</button>
     <button id="btnOta" class="quiet" type="button" disabled>Check for updates</button>
