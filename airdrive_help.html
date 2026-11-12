@@ -61,6 +61,17 @@
         exclusively through the secure browser popup!
     </div>
 
+    <div class="note">
+        <strong>WINDOWS USERS - KEYBOARD OR FILES, NOT BOTH AT ONCE:</strong><br />
+        Windows can use the AirDrive as a keyboard, or this page can copy files, but not at the same time.
+        If Windows Bluetooth settings is connected to Model T AirDrive, it is holding the connection as a keyboard
+        and this page cannot see the disks.<br /><br />
+        <strong>Fix:</strong> Open Windows Bluetooth settings, select <strong>Model T AirDrive</strong>, and Remove device.
+        Come back to this page and click <strong>Connect AirDrive</strong>. Pair it from the browser list.
+        Do not pair it from the Windows Bluetooth screen. If it is not in the list, press reset on the AirDrive once.
+        The Model 100, 102, and 200 still use the AirDrive through the cable. That part is not affected.
+    </div>
+
     <h2>Supported Platforms & Browsers</h2>
     <p>The AirDrive Manager uses the <strong>Web Bluetooth API</strong> and the <strong>File System Access API</strong>.
         Support varies across devices:</p>
@@ -156,6 +167,21 @@
     <p>After forgetting, the AirDrive should show up again in the Chrome/Edge Bluetooth picker. This is a macOS / HID
         ownership quirk, not a dead radio; keep this step handy whenever a previously working connection refuses to
         come back.</p>
+
+    <h2>7. Troubleshooting: Windows is using it as a keyboard</h2>
+    <p>On Windows, the AirDrive can be a Bluetooth keyboard, or Chrome or Edge can copy files and check for an update.
+        Windows can only do one of those at a time. If the version check stays at 0%, or Connect AirDrive does not
+        list the disks, Windows is holding the connection.</p>
+    <ol>
+        <li>Open <strong>Settings &rarr; Bluetooth &amp; devices</strong>.</li>
+        <li>Find <strong>Model T AirDrive</strong> and choose <strong>Remove device</strong>.</li>
+        <li>Press reset on the AirDrive once. It turns Bluetooth off to save the battery, and reset wakes it up.</li>
+        <li>Return to this page, or to the update page, and select <strong>Model T AirDrive</strong> from the browser list.</li>
+        <li>Do not pair it from the Windows Bluetooth screen.</li>
+    </ol>
+    <p>Removing it there does not turn off the keyboard feature. Pair it from Windows Bluetooth settings when you want
+        it to type. Remove it again when you want this website to copy files or install an update. A Mac or Android
+        phone is not changed by this. The Model 100, 102, and 200 still load files through the cable.</p>
 
 </body>
 
