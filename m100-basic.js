@@ -260,7 +260,7 @@
       let end = i;
       while (end < bytes.length && bytes[end] !== 0) end++;
       if (end >= bytes.length) throw new Error('Tokenized line ' + num + ' has no ending zero.');
-      lines.push(String(num) + detokenizePayload(bytes.subarray(i, end)));
+      lines.push(String(num) + ' ' + detokenizePayload(bytes.subarray(i, end)));
       i = end + 1;
     }
     if (!lines.length) throw new Error('No tokenized BASIC lines found.');
