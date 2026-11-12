@@ -16,9 +16,9 @@
   const SD_REQ = 182; // S140 6.1.1, 0x00B6
   const DEVICE_TYPE = 82;
   const PACKET = 20;
-  // The updater can hold 8 packets. A receipt is sent before the previous
-  // packet is stored, so one packet at a time keeps a retry from overflowing it.
-  const PRN = 1;
+  // The updater holds 8 packets. Waiting every 4 leaves room for the one
+  // still being stored, and is much faster than waiting after every packet.
+  const PRN = 4;
   const OP_START = 1;
   const OP_INIT = 2;
   const OP_RECEIVE = 3;
@@ -302,7 +302,7 @@
       sentPackets += 1;
       const more = off + chunk.length < bin.length;
       if (sentPackets % PRN === 0 && more) await waitKind(queue, "receipt", 0, 15000);
-      if (sentPackets % 25 === 0 || !more) {
+      if (sentPackets % 10 === 0 || !more) {
         report(Math.min(99, Math.floor(((off + chunk.length) / bin.length) * 96) + 3), "Sending the update…");
       }
     }

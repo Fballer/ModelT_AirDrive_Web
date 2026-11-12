@@ -102,20 +102,37 @@
 
     #status {
       min-height: 1.4em;
-      color: #d7dcc8;
+      color: #ffffff;
+      font-size: 20px;
+      font-weight: bold;
     }
 
     #track {
-      height: 16px;
-      background: #333;
-      border: 1px solid #9ea78d;
-      margin-top: 8px;
+      height: 36px;
+      background: #111;
+      border: 3px solid #ffffff;
+      margin-top: 12px;
+      position: relative;
     }
 
     #fill {
       height: 100%;
       width: 0;
-      background: #2a4d87;
+      background: #3dff7a;
+    }
+
+    #pct {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 18px;
+      font-weight: bold;
     }
 
     details {
@@ -209,7 +226,7 @@
       <p id="result">Connect your AirDrive to see if it already has this version.</p>
       <button type="button" id="btnInstall" hidden>Install this update</button>
       <button type="button" id="btnContinue" hidden>Select AirDrive</button>
-      <div id="track"><div id="fill"></div></div>
+      <div id="track"><div id="fill"></div><div id="pct">0%</div></div>
     </div>
 
     <details>
@@ -220,13 +237,14 @@
   </main>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="airdrive_ota.js?v=20261113c"></script>
+  <script src="airdrive_ota.js?v=20261113d"></script>
   <script>
     const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     const dateEl = document.getElementById("publishedDate");
     const resultEl = document.getElementById("result");
     const statusEl = document.getElementById("status");
     const fillEl = document.getElementById("fill");
+    const pctEl = document.getElementById("pct");
     const updateCard = document.getElementById("updateCard");
     const betaGuide = document.getElementById("betaGuide");
     const btnCheck = document.getElementById("btnCheck");
@@ -249,8 +267,12 @@
     }
 
     function setStatus(text, pct) {
-      statusEl.textContent = text || "";
-      if (pct != null) fillEl.style.width = Math.max(0, Math.min(100, pct)) + "%";
+      const n = pct == null ? null : Math.max(0, Math.min(100, Math.round(pct)));
+      statusEl.textContent = text ? (n == null ? text : text + " " + n + "%") : "";
+      if (n != null) {
+        fillEl.style.width = n + "%";
+        pctEl.textContent = n + "%";
+      }
     }
 
     function setBusy(on) {
