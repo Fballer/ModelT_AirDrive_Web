@@ -16,7 +16,9 @@
   const SD_REQ = 182; // S140 6.1.1, 0x00B6
   const DEVICE_TYPE = 82;
   const PACKET = 20;
-  const PRN = 10;
+  // The updater can hold 8 packets. A receipt is sent before the previous
+  // packet is stored, so one packet at a time keeps a retry from overflowing it.
+  const PRN = 1;
   const OP_START = 1;
   const OP_INIT = 2;
   const OP_RECEIVE = 3;
@@ -83,10 +85,11 @@
       if (left <= 0) fail("Timed out waiting for the bootloader.");
       const msg = await queue.next(left);
       if (msg[0] === OP_RESPONSE && msg[2] !== 1) {
+        const step = { 1: "while preparing", 2: "while checking the file", 3: "while receiving", 4: "while checking the copy" }[msg[1]] || "";
         if (msg[2] === 2) {
           fail("The updater is still on the last attempt. Unplug the AirDrive, plug it back in, click Check my AirDrive, and select AirDrive.");
         }
-        fail("Bootloader rejected the update (" + (ERRORS[msg[2]] || ("code " + msg[2])) + ").");
+        fail("Bootloader rejected the update (" + (ERRORS[msg[2]] || ("code " + msg[2])) + ")" + (step ? " " + step : "") + ". Leave it plugged in.");
       }
       if (kind === "response" && msg[0] === OP_RESPONSE && msg[1] === proc && msg[2] === 1) return msg;
       if (kind === "receipt" && msg[0] === OP_RECEIPT) return msg;
@@ -97,10 +100,20 @@
     await control.writeValue(u8(bytes));
   }
 
+  function delay(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
   async function writePacket(packet, bytes) {
     const copy = u8(bytes);
     if (copy.length === 0 || copy.length > PACKET) fail("DFU packet length " + copy.length + " is outside 1–20.");
-    await packet.writeValueWithoutResponse(copy);
+    let chunk = copy;
+    if (chunk.length % 4 !== 0) {
+      const padded = new Uint8Array(chunk.length + (4 - (chunk.length % 4)));
+      padded.set(chunk);
+      chunk = padded;
+    }
+    await packet.writeValueWithoutResponse(chunk);
   }
 
   async function parseZip(buffer) {
@@ -272,6 +285,8 @@
     for (let i = 0; i < image.dat.length; i += PACKET) {
       await writePacket(packet, image.dat.subarray(i, i + PACKET));
     }
+    // Windows can deliver the completion before the file check bytes.
+    await delay(150);
     await writeControl(control, [OP_INIT, 0x01]);
     await waitKind(queue, "response", OP_INIT, 20000);
 
