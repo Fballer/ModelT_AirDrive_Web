@@ -196,18 +196,35 @@
     return null;
   }
 
+  function withTimeout(promise, ms, message) {
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error(message)), ms);
+      promise.then((value) => {
+        clearTimeout(timer);
+        resolve(value);
+      }, (err) => {
+        clearTimeout(timer);
+        reject(err);
+      });
+    });
+  }
+
+  const WINDOWS_HOLDING = "Windows is holding the Bluetooth connection because it paired the AirDrive as a keyboard. Open Windows Bluetooth settings and remove Model T AirDrive. Press reset on the AirDrive. Click Check my AirDrive again and select it on this page. Do not pair it from the Windows Bluetooth screen.";
+
   async function readEdition(device) {
-    if (!device.gatt.connected) await device.gatt.connect();
-    const service = await device.gatt.getPrimaryService(WEBFS_SERVICE);
-    const writeChar = await service.getCharacteristic(WEBFS_WRITE);
-    const notifyChar = await service.getCharacteristic(WEBFS_NOTIFY);
-    await notifyChar.startNotifications();
+    if (!device.gatt.connected) {
+      await withTimeout(device.gatt.connect(), 8000, WINDOWS_HOLDING);
+    }
+    const service = await withTimeout(device.gatt.getPrimaryService(WEBFS_SERVICE), 8000, WINDOWS_HOLDING);
+    const writeChar = await withTimeout(service.getCharacteristic(WEBFS_WRITE), 8000, WINDOWS_HOLDING);
+    const notifyChar = await withTimeout(service.getCharacteristic(WEBFS_NOTIFY), 8000, WINDOWS_HOLDING);
     const queue = new NotifyQueue(notifyChar);
+    await withTimeout(notifyChar.startNotifications(), 8000, WINDOWS_HOLDING);
     const payload = new TextEncoder().encode("VER");
     try {
-      await writeChar.writeValueWithoutResponse(payload);
+      await withTimeout(writeChar.writeValue(payload), 4000, WINDOWS_HOLDING);
     } catch (e) {
-      await writeChar.writeValue(payload);
+      await withTimeout(writeChar.writeValueWithoutResponse(payload), 4000, WINDOWS_HOLDING);
     }
     const deadline = Date.now() + 2500;
     let text = "";
