@@ -140,6 +140,36 @@
       padding: 8px;
     }
 
+    .disk-controls .tip {
+      width: 100%;
+      display: block;
+    }
+
+    .disk-controls select {
+      width: 100%;
+      background: #3a3a3a;
+      color: #c8c8c8;
+      border: 1px solid #5a5a5a;
+      font-family: monospace;
+      font-size: 13px;
+      padding: 8px;
+    }
+
+    .disk-controls button.convert,
+    .disk-controls button.convert:hover {
+      background-color: #3a3a3a;
+      color: #c8c8c8;
+      border-color: #5a5a5a;
+      font-weight: normal;
+    }
+
+    .tip.left .tip-box {
+      top: 0;
+      left: auto;
+      right: calc(100% + 8px);
+      width: 280px;
+    }
+
     /* Shared Floppy Disk Styles */
     .floppy {
       position: absolute;
@@ -340,22 +370,6 @@
       color: #fff;
     }
 
-    #basicMachine {
-      background: #222;
-      color: #9ea78d;
-      border: 2px solid #9ea78d;
-      font-family: monospace;
-      font-size: 13px;
-      padding: 6px 8px;
-    }
-
-    .convert-hint {
-      margin: 12px 0 0;
-      color: #c5cbb8;
-      font-size: 14px;
-      text-align: center;
-    }
-
     .floppy.drag-over {
       border-color: #fff;
       box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
@@ -455,6 +469,18 @@
       <button id="btnBackupSingle">BACKUP entire selected Virtual DISK to PC</button>
       <button id="btnRestoreSingle">RESTORE Backup from PC to Virtual Disk</button>
       <button id="btnFormat" class="danger-btn">FORMAT Select Virtual Disk</button>
+      <select id="basicMachine" aria-label="Model">
+        <option value="100" selected>Model 100 / 102</option>
+        <option value="200">Model 200</option>
+      </select>
+      <span class="tip left">
+        <button id="btnBasicToDisk" class="convert" type="button">Convert/Save PC File to .BA and save to FLOPPY</button>
+        <span class="tip-box">Select the correct model first. Model 100 and Model 200 use different tokens and rules.</span>
+      </span>
+      <span class="tip left">
+        <button id="btnBasicFromDisk" class="convert" type="button">Convert/Save Selected .BA floppy File to .TXT format in PC Folder</button>
+        <span class="tip-box">Select the correct model first. Model 100 and Model 200 use different tokens and rules.</span>
+      </span>
     </div>
   </div>
 
@@ -463,10 +489,6 @@
       <h2>PC FOLDER: <span style="font-size: 14px; font-weight: normal; color: #ccc;">(Drag and Drop Files onto Disk
           Label above)</span></h2>
       <div class="pc-actions">
-        <select id="basicMachine" aria-label="Model">
-          <option value="100" selected>Model 100 / 102</option>
-          <option value="200">Model 200</option>
-        </select>
         <span class="tip above">
           <button id="btnSelectDir" style="font-size: 13px; padding: 6px 12px; white-space: nowrap;">Select Folder</button>
           <span class="tip-box">Pick your folder in the pop-up and then press Upload. Chrome considers your file list an upload, and it may say hundreds of files will be uploaded, and to do that only if you trust this site. Press Upload. Chrome is only reading the file names in that folder on this computer. Nothing is copied to the AirDrive until you drag a file onto a disk.</span>
@@ -479,13 +501,7 @@
       <li><i>No folder selected. Click "Select Folder" to browse your computer.</i></li>
     </ul>
 
-    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:15px;">
-      <button id="btnBasicToDisk" type="button" style="flex:1;">Convert/Save PC File to .BA and save to FLOPPY</button>
-      <button id="btnBasicFromDisk" type="button" style="flex:1;">Convert/Save Selected .BA floppy File to .TXT format in PC Folder</button>
-    </div>
-    <p class="convert-hint">If you are using a Model 200, select Model 200 from the drop down above so the conversion works properly.</p>
-
-    <div class="pc-footer">
+    <div class="pc-footer"
       style="margin-top: 15px; border-top: 2px solid #555; padding-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
       <button id="btnBackupAll" style="flex: 1;">BACKUP All 5 Disks at ONCE</button>
       <button id="btnRestoreAll" class="danger-btn" style="flex: 1;">RESTORE All 5 Disks at ONCE</button>
