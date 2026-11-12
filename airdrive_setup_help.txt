@@ -17,7 +17,7 @@ Your floppy files should stay. Save them on your computer first (just in case).
 
 6. Press the reset button twice, quickly. A drive named NICENANO appears.
 
-7. Unzip this download and run airdrive_setup.bat. Windows might warn you this program is not safe. It is safe. The high Microsoft registration fee to remove this warning has not been paid. The program copies the firmware, then asks you to press reset twice again, then copies the updater. Leave the cable plugged in until it says the AirDrive is finished.
+7. Unzip the file, then run airdrive_setup.bat. A pop-up warning may say this program is not safe. It is safe. The high Microsoft registration fee to remove this warning has not been paid. The program copies the firmware, then asks you to press reset twice again, then copies the updater. Leave the cable plugged in until it says the AirDrive is finished.
 
 8. When it is done, unplug the USB cable. Close the case. Press the PCB down somewhat hard so it pressure-fits again. Tuck in the battery wires so the lid closes fully. Replace the screw and the batteries, and turn the AirDrive on.
 
