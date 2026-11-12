@@ -246,22 +246,22 @@
       <p class="label">What's new</p>
       <p id="whatsNew">New version highlights: OTA firmware updates and firmware checks. Updated game names to reduce any legal/trademark conflicts. Improved AirDrive wake-up process, so less chance of Disk not ready errors during menu loads. The address shown while TS-DOS loads is portacoco.com/airdrive.html. Highly recommend you do this update.</p>
       <p id="result">Connect your AirDrive to see if it already has this version.</p>
+      <p id="stay" class="stay" hidden>This update takes about 10 minutes. Click Install this update, then leave the AirDrive alone. Stay on this page. Do not press Back, reload, or any other button. Do not press any buttons on the AirDrive. Keep this computer awake. Do not close the laptop or let it sleep. If it goes to sleep, the update stops. Unplug the AirDrive, plug it back in, and click Check my AirDrive again. Select AirDrive. Your files stay.</p>
       <button type="button" id="btnInstall" hidden>Install this update</button>
       <button type="button" id="btnContinue" hidden>Select AirDrive</button>
-      <p id="stay" class="stay" hidden>Stay on this page until it says the update is finished. Do not press Back, reload, or any other button. Do not press any buttons on the AirDrive. This takes about 10 minutes.</p>
       <p id="done" class="done" hidden></p>
       <div id="track"><div id="fill"></div><div id="pct">0%</div></div>
     </div>
 
     <details>
       <summary>My AirDrive restarted and I do not see Model T AirDrive</summary>
-      <p>Unplug the AirDrive, then plug it back in. It comes back as <strong>Model T AirDrive</strong>. The update was not written. Your files are still there.</p>
+      <p>Unplug the AirDrive, then plug it back in. If the update had not started, it comes back as <strong>Model T AirDrive</strong>. If the computer went to sleep after the update started, it comes back as <strong>AirDrive</strong>. Click Check my AirDrive and select AirDrive. Your files are still there. The update starts over.</p>
       <button type="button" id="btnResume" hidden>Start over</button>
     </details>
   </main>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="airdrive_ota.js?v=20261113f"></script>
+  <script src="airdrive_ota.js?v=20261113g"></script>
   <script>
     const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     const dateEl = document.getElementById("publishedDate");
@@ -278,10 +278,15 @@
     const btnContinue = document.getElementById("btnContinue");
     const btnResume = document.getElementById("btnResume");
 
+    const BEFORE_WARNING = "This update takes about 10 minutes. Click Install this update, then leave the AirDrive alone. Stay on this page. Do not press Back, reload, or any other button. Do not press any buttons on the AirDrive. Keep this computer awake. Do not close the laptop or let it sleep. If it goes to sleep, the update stops. Unplug the AirDrive, plug it back in, and click Check my AirDrive again. Select AirDrive. Your files stay.";
+    const DURING_WARNING = "Stay on this page until it says the update is finished. Do not press Back, reload, or any other button. Do not press any buttons on the AirDrive. This takes about 10 minutes. Keep this computer awake. Do not close the laptop or let it sleep. If it goes to sleep, the update stops. Unplug the AirDrive, plug it back in, and click Check my AirDrive again.";
+
     let image = null;
     let publishedEdition = document.getElementById("publishedDate").dataset.edition || "2026-11-10";
     let airDevice = null;
     let busy = false;
+    let holding = false;
+    let wakeLock = null;
 
     function pretty(iso) {
       if (!iso || iso.length < 10) return "";
@@ -319,10 +324,30 @@
       updateCard.hidden = on;
     }
 
-    function showStay(on) {
-      stayEl.hidden = !on;
-      if (on) doneEl.hidden = true;
+    function showWarning(text) {
+      stayEl.hidden = !text;
+      if (text) {
+        stayEl.textContent = text;
+        doneEl.hidden = true;
+      }
     }
+
+    async function keepAwake() {
+      try {
+        if (navigator.wakeLock) wakeLock = await navigator.wakeLock.request("screen");
+      } catch (e) {}
+    }
+
+    async function releaseAwake() {
+      try {
+        if (wakeLock) await wakeLock.release();
+      } catch (e) {}
+      wakeLock = null;
+    }
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible" && holding) keepAwake();
+    });
 
     function finishMessage() {
       const when = pretty(image.edition || publishedEdition);
@@ -330,7 +355,9 @@
     }
 
     function showFinished() {
-      showStay(false);
+      holding = false;
+      showWarning("");
+      releaseAwake();
       doneEl.textContent = finishMessage();
       doneEl.hidden = false;
       resultEl.textContent = finishMessage();
@@ -370,14 +397,17 @@
       if (deviceEdition === publishedEdition) {
         resultEl.textContent = "Your AirDrive is up to date. It has the " + yours + " version. No setup is needed.";
         showInstall(false);
+        showWarning("");
         return;
       }
       if (deviceEdition > publishedEdition) {
         resultEl.textContent = "Your AirDrive is newer (" + yours + ") than the version on this page (" + latest + "). Leave it as it is.";
         showInstall(false);
+        showWarning("");
         return;
       }
-      resultEl.textContent = "Your AirDrive has the " + yours + " version. A newer one was published " + latest + ". Click Install this update. The AirDrive restarts. Then click Select AirDrive and choose AirDrive in the list.";
+      resultEl.textContent = "Your AirDrive has the " + yours + " version. A newer one was published " + latest + ". This takes about 10 minutes. Click Install this update, then leave the AirDrive alone. Keep this computer awake.";
+      showWarning(BEFORE_WARNING);
       showInstall(true);
     }
 
@@ -399,8 +429,10 @@
             return;
           }
           showBeta(false);
-          resultEl.textContent = "This AirDrive is in the middle of an update. Sending the firmware now. Stay on this page. Do not press any buttons on the AirDrive. This takes about 10 minutes.";
-          showStay(true);
+          resultEl.textContent = "This AirDrive is in the middle of an update. Sending the firmware now. Stay on this page. Do not press any buttons on the AirDrive. This takes about 10 minutes. Keep this computer awake.";
+          showWarning(DURING_WARNING);
+          holding = true;
+          keepAwake();
           await AirDriveOta.flashDfu(airDevice, image, (pct, text) => setStatus(text, pct));
           showFinished();
           return;
@@ -412,7 +444,9 @@
       } catch (err) {
         if (err && err.name === "NotFoundError") resultEl.textContent = "Nothing was selected. Click Check my AirDrive. Select Model T AirDrive, or AirDrive if an update already started.";
         else resultEl.textContent = err.message || "Could not read your AirDrive.";
-        showStay(false);
+        showWarning("");
+        holding = false;
+        releaseAwake();
         setStatus("", 0);
       } finally {
         setBusy(false);
@@ -422,7 +456,10 @@
     btnInstall.onclick = async () => {
       if (!image) return;
       setBusy(true);
-      setStatus("Restarting your AirDrive.", 5);
+      holding = true;
+      keepAwake();
+      showWarning(DURING_WARNING);
+      setStatus("Restarting your AirDrive. Leave it alone and keep this computer awake for about 10 minutes.", 5);
       try {
         if (!airDevice) airDevice = await AirDriveOta.pickAirDrive();
         await AirDriveOta.rebootToDfu(airDevice);
@@ -433,6 +470,9 @@
       } catch (err) {
         if (err && err.name === "NotFoundError") resultEl.textContent = "Model T AirDrive was not selected. Click Install this update and select Model T AirDrive.";
         else resultEl.textContent = err.message || "The update did not start.";
+        holding = false;
+        showWarning(BEFORE_WARNING);
+        releaseAwake();
       } finally {
         setBusy(false);
       }
@@ -441,17 +481,19 @@
     btnContinue.onclick = async () => {
       if (!image) return;
       setBusy(true);
-      setStatus("A Bluetooth list is open. Select AirDrive, then Pair. Then stay on this page for about 10 minutes.", 8);
-      showStay(true);
+      setStatus("A Bluetooth list is open. Select AirDrive, then Pair. Then leave the AirDrive alone for about 10 minutes. Keep this computer awake.", 8);
+      showWarning(DURING_WARNING);
+      holding = true;
+      keepAwake();
       try {
         const device = await AirDriveOta.pickDfu();
         await AirDriveOta.flashDfu(device, image, (pct, text) => setStatus(text, pct));
         btnContinue.hidden = true;
         showFinished();
       } catch (err) {
-        resultEl.textContent = (err.message || "The update did not finish.") + " Leave it plugged in. Do not press buttons on the AirDrive. If AirDrive is still in the list, click Select AirDrive.";
+        resultEl.textContent = (err.message || "The update did not finish.") + " Leave it plugged in. Do not press buttons on the AirDrive. If the computer went to sleep, unplug the AirDrive, plug it back in, click Check my AirDrive, and select AirDrive.";
         btnContinue.hidden = false;
-        showStay(false);
+        showWarning(DURING_WARNING);
         setStatus("", 8);
       } finally {
         setBusy(false);

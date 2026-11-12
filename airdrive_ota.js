@@ -303,7 +303,7 @@
       const more = off + chunk.length < bin.length;
       if (sentPackets % PRN === 0 && more) await waitKind(queue, "receipt", 0, 15000);
       if (sentPackets % 10 === 0 || !more) {
-        report(Math.min(99, Math.floor(((off + chunk.length) / bin.length) * 96) + 3), "Sending the update… Stay on this page. Do not press buttons on the AirDrive. About 10 minutes.");
+        report(Math.min(99, Math.floor(((off + chunk.length) / bin.length) * 96) + 3), "Sending the update… Stay on this page. Do not press buttons on the AirDrive. About 10 minutes. Keep this computer awake.");
       }
     }
     await waitKind(queue, "response", OP_RECEIVE, 30000);
