@@ -248,7 +248,7 @@
       <p id="result">Connect your AirDrive to see if it already has this version.</p>
       <button type="button" id="btnInstall" hidden>Install this update</button>
       <button type="button" id="btnContinue" hidden>Select AirDrive</button>
-      <p id="stay" class="stay" hidden>Stay on this page until it says the update is finished. Do not press Back, reload, or any other button. Do not press any buttons on the AirDrive. This takes about 3 minutes.</p>
+      <p id="stay" class="stay" hidden>Stay on this page until it says the update is finished. Do not press Back, reload, or any other button. Do not press any buttons on the AirDrive. This takes about 10 minutes.</p>
       <p id="done" class="done" hidden></p>
       <div id="track"><div id="fill"></div><div id="pct">0%</div></div>
     </div>
@@ -261,7 +261,7 @@
   </main>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="airdrive_ota.js?v=20261113e"></script>
+  <script src="airdrive_ota.js?v=20261113f"></script>
   <script>
     const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     const dateEl = document.getElementById("publishedDate");
@@ -399,7 +399,7 @@
             return;
           }
           showBeta(false);
-          resultEl.textContent = "This AirDrive is in the middle of an update. Sending the firmware now. Stay on this page. Do not press any buttons on the AirDrive. This takes about 3 minutes.";
+          resultEl.textContent = "This AirDrive is in the middle of an update. Sending the firmware now. Stay on this page. Do not press any buttons on the AirDrive. This takes about 10 minutes.";
           showStay(true);
           await AirDriveOta.flashDfu(airDevice, image, (pct, text) => setStatus(text, pct));
           showFinished();
@@ -441,7 +441,7 @@
     btnContinue.onclick = async () => {
       if (!image) return;
       setBusy(true);
-      setStatus("A Bluetooth list is open. Select AirDrive, then Pair. Then stay on this page for about 3 minutes.", 8);
+      setStatus("A Bluetooth list is open. Select AirDrive, then Pair. Then stay on this page for about 10 minutes.", 8);
       showStay(true);
       try {
         const device = await AirDriveOta.pickDfu();
