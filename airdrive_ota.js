@@ -7,9 +7,9 @@
   const WEBFS_SERVICE = "19b10000-e8f2-537e-4f6c-d104768a1214";
   const WEBFS_WRITE = "19b10001-e8f2-537e-4f6c-d104768a1214";
   const WEBFS_NOTIFY = "19b10002-e8f2-537e-4f6c-d104768a1214";
-  const DFU_SERVICE = "00001530-1212-efde-1523-785feabcd123";
-  const DFU_CONTROL = "00001531-1212-efde-1523-785feabcd123";
-  const DFU_PACKET = "00001532-1212-efde-1523-785feabcd123";
+  const DFU_SERVICE = "19b10010-e8f2-537e-4f6c-d104768a1214";
+  const DFU_CONTROL = "19b10011-e8f2-537e-4f6c-d104768a1214";
+  const DFU_PACKET = "19b10012-e8f2-537e-4f6c-d104768a1214";
 
   // Production app slot: 0x26000–0x64000. Larger images are factory-sized.
   const APP_SLOT_MAX = 0x3e000;
@@ -308,10 +308,7 @@
 
   function pickDfu() {
     return navigator.bluetooth.requestDevice({
-      filters: [
-        { name: "AdaDFU" },
-        { services: [DFU_SERVICE] }
-      ]
+      filters: [{ name: "AirDrive" }, { services: [DFU_SERVICE] }]
     });
   }
 

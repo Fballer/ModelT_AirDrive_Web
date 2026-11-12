@@ -23,13 +23,15 @@ Someone may copy only `airdrive.html` and host that one page somewhere else. Dis
 
 `airdrive_help.html` is the owner help page.
 
-`airdrive_ota.html` and `airdrive_ota.js` are the update page. It shows the published date and the what's-new notes, then downloads the firmware from `airdrive_firmware/`. **Check my AirDrive** connects and asks the module for its edition date. If the module is older than the published date, **Install this update** appears.
+`airdrive_ota.html` and `airdrive_ota.js` are the update page. It shows the published date and the what's-new notes. **Check my AirDrive** connects and asks the module for its edition date. Select **Model T AirDrive** in that list.
 
-Install writes `OTA` to the module. The module blinks and restarts with the Bluetooth name **AdaDFU**. The page then sends `airdrive_app.zip`. That zip is the application only. The five virtual disks are not in it, and the files on them stay. Chrome asks for AdaDFU as a second Bluetooth choice. Leave the AirDrive plugged in until the page says the update is finished.
+**Check my AirDrive** asks the module for its edition date.
 
-Open the update page from the website in Chrome or Edge. A saved file on the computer can check a date, but it cannot download the firmware.
+- No date means one of the first ten beta units. The page shows the one-time Windows setup and the **Download AirDrive Setup** button. Those units still have the stock updater, which Chrome cannot talk to. They do not get an Install button.
+- A date means the new updater is already installed. If that date is older than the page, **Install this update** restarts the AirDrive. The next list says **AirDrive**. Select that. The five disks are not in the firmware file.
+- The same date means it is already current. A newer date than the page means leave it.
 
-If the module already rebooted and the page lost it, open **The update already restarted my AirDrive** and choose **AdaDFU**.
+Chrome still blocks the old Nordic update service (`00001530-1212-efde-1523-785feabcd123`). The new updater uses a private AirDrive service instead, and it advertises as **AirDrive**. The running module still advertises as **Model T AirDrive**.
 
 ## Files required on portacoco.com
 
@@ -43,6 +45,7 @@ All of these sit in the same folder as the existing `airdrive.html`. Names are l
 | `airdrive_ota.js` | yes | Bluetooth update code used by the update page. |
 | `airdrive_firmware/airdrive_app.zip` | yes | Application-only firmware. Does not include the five disks. |
 | `airdrive_firmware/airdrive_info.json` | yes | Published date, what's-new text, and the zip filename. |
+| `airdrive_setup.zip` | yes | One-time Windows installer for beta units and for new boards before the case is closed. |
 
 `index.html` is only the GitHub Pages copy of the manager. It is not part of the PortaCoCo upload.
 
@@ -112,10 +115,64 @@ Build the firmware in the production tree, `MODEL_T_AirDrive-model-200-loader`. 
 
    Extract `airdrive_deploy.zip` in cPanel the same way as a website deploy. Replacing the whole zip also refreshes the update page. Uploading only the `airdrive_firmware` folder is enough when the HTML did not change, because the page loads the date and notes from `airdrive_info.json`.
 
-6. In Chrome, open https://www.portacoco.com/airdrive_ota.html. **Check my AirDrive**. If the module is older, **Install this update**. When Chrome asks again, choose **AdaDFU**. Leave power on until the page finishes.
+6. In Chrome, open https://www.portacoco.com/airdrive_ota.html. **Check my AirDrive** and select **Model T AirDrive**. A unit that already has the new updater and an older date can install from the page. Select **AirDrive** in the second list. A unit with no date is a beta unit and must use the Windows setup below. Do not try to send the firmware to a beta unit from the page.
 
 7. If this firmware also changes the BASIC installer on the Tandy, the owner still runs **Install** on the computer afterward. The Bluetooth update does not rewrite the laptop.
 
-USB is the recovery path if a Bluetooth update stops. A failed transfer can leave the module in the bootloader. Plug it in by USB and flash the application zip, not a factory image.
+After the new updater is installed, losing power during a website update brings the module back on Bluetooth as **AirDrive**, so the owner can click **Select AirDrive** and try again. USB stays hidden. Before that updater is installed, a power loss after the send has started can leave the stock updater on USB only. That is why the ten beta units, and every new board, get the Windows program once before the case stays closed.
 
 Modules already in the field keep showing the address that was in the firmware when they were programmed. The loader screen says `PortaCoCo.com/airdrive.html` only after a firmware build that contains that lowercase address.
+
+## The installer, now and later
+
+`airdrive_setup.zip` is the program used for the ten beta units and for every new AirDrive before the case is closed. It is not a factory image. It does not load the five disks.
+
+On Windows, the owner unzips it and runs `airdrive_setup.bat`. That file runs `airdrive_setup.ps1`. The program waits for a drive named **NICENANO**, copies `airdrive_firmware.uf2`, waits for the drive to leave, asks for a second double-press of reset, then copies `airdrive_bootloader.uf2`.
+
+On a Mac, the same folder can be tested with:
+
+```
+python3 airdrive_setup.py
+```
+
+Use an open board. Back up all five disks first. The updater file is staged in flash that overlaps the end of the disk storage, so a disk can look wrong afterward. Restore from the backup if that happens. Do not pull power while either file is copying. Replacing the updater is the one step that, if interrupted, can need a hardware programmer rather than the USB drive.
+
+New boards use this same zip once, with the case still open, before the disks are loaded and the case is closed. After that, later firmware goes through the website only.
+
+## Rebuild the beta zip
+
+Do this when the one-time program, the updater, or the firmware inside that zip changes. The website firmware in `airdrive_firmware/` can be newer than the copy inside the beta zip. Keep them the same when you publish, so a beta unit finishes on the same date the page is offering.
+
+1. Build the application in `MODEL_T_AirDrive-model-200-loader`:
+
+   ```
+   pio run -e tenstar_promicro
+   ```
+
+2. Build the updater in `AirDrive-bootloader`. Use the PlatformIO ARM compiler, not the system one:
+
+   ```
+   export PATH="$HOME/.platformio/packages/toolchain-gccarmnoneeabi/bin:$PATH"
+   make BOARD=nice_nano
+   ```
+
+   The updater must still start at `0xF4000`. The make step that packs a SoftDevice zip can fail if `adafruit-nrfutil` is not installed. The hex is already written by then. Make the two UF2 files with:
+
+   ```
+   python3 lib/uf2/utils/uf2conv.py -f 0xd663823c -c -o airdrive_bootloader.uf2 _build/build-nice_nano/nice_nano_bootloader-0.6.2-dirty_nosd.hex
+   python3 lib/uf2/utils/uf2conv.py -f 0xADA52840 -c -o airdrive_firmware.uf2 /path/to/firmware.hex
+   ```
+
+   `firmware.hex` is `.pio/build/tenstar_promicro/firmware.hex`. The application UF2 must start at `0x26000` and end before `0x64000`.
+
+3. Copy both UF2 files into `MODEL_T_AirDrive_Web`, next to `airdrive_setup.bat`. Edit `airdrive_setup_help.txt` when the owner steps change, and keep the same steps on `airdrive_ota.html`.
+
+4. Pack the beta download:
+
+   ```
+   python3 scripts/build_airdrive_setup.py
+   ```
+
+   That writes `airdrive_setup.zip`. Then pack the site with `python3 scripts/build_airdrive_deploy.py` from a firmware tree and extract it in cPanel as usual.
+
+The updater source is the Adafruit nRF52 bootloader 0.6.2, checked out at `AirDrive-bootloader`. It is not pushed back to Adafruit. The AirDrive changes are the private Bluetooth service `19b10010-e8f2-537e-4f6c-d104768a1214`, the control and packet IDs `19b10011` and `19b10012`, the advertised name **AirDrive**, and Bluetooth with no timeout when a normal power-on finds no valid application. Double-press reset still opens the **NICENANO** USB drive.

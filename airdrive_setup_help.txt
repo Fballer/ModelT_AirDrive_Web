@@ -1,0 +1,24 @@
+One-time setup for this AirDrive
+CONGRATS you are one of the very first owners of a MT:AirDrive
+
+This AirDrive was one of the very first MT:AirDrives sold at VCF Montreal 2026 and is on a version of the firmware that cannot easily update via Bluetooth. As such, it needs a special one-time setup on a Windows computer to get the new firmware. After this update it then matches every newer AirDrive and then you will not open the case again. You do not need to do this update, but it will give you some new features (better wake-up etc), but it will require you do a few more steps to update.
+
+Your floppy files should stay. Save them on your computer first (just in case).
+
+1. Open the AirDrive disk manager on this website (like you did to see this). Click BACKUP All 5 Disks at ONCE and keep that file.
+
+2. Remove the batteries from your AirDrive. Then remove the front label (Model 100 version on the top, just peel it up, try not to bend it, also it may be sharp so be careful). You will then see a small screw. Remove that. Then the top of the case can be removed.
+
+3. Pull the PCB board up slightly to access the USB port. It is just a pressure fit, so you could use a small screwdriver to help lift it up a bit, and once it comes up slightly, stop. The battery connectors stay in place (there is enough wire to lift it without removing these wires). With the PCB up, connect a USB-C cable to your Windows computer. The cable must do data as well as power. A power-only cable will not work.
+
+4. Use a Windows 10 or 11 computer. This zip is AirDrive Setup. It contains airdrive_setup.bat, the firmware, the updater, and this instruction file.
+
+5. Plug the USB cable from the AirDrive into that Windows computer.
+
+6. Press the reset button twice, quickly. A drive named NICENANO appears.
+
+7. Unzip this download and run airdrive_setup.bat. Windows might warn you this program is not safe. It is safe. The high Microsoft registration fee to remove this warning has not been paid. The program copies the firmware, then asks you to press reset twice again, then copies the updater. Leave the cable plugged in until it says the AirDrive is finished.
+
+8. When it is done, unplug the USB cable. Close the case. Press the PCB down somewhat hard so it pressure-fits again. Tuck in the battery wires so the lid closes fully. Replace the screw and the batteries, and turn the AirDrive on.
+
+9. Return to the AirDrive update page and click Check my AirDrive again. A date means the one-time setup worked. You are done.

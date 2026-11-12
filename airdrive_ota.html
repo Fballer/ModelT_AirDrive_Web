@@ -115,6 +115,43 @@
       cursor: pointer;
     }
 
+    strong {
+      color: #d7dcc8;
+    }
+
+    ol.steps {
+      margin: 8px 0 0;
+      padding-left: 1.4em;
+    }
+
+    ol.steps li {
+      margin: 8px 0;
+    }
+
+    #betaGuide {
+      background: #111;
+      border: 3px solid #2a4d87;
+      padding: 16px;
+      margin-top: 16px;
+    }
+
+    #betaGuide h2 {
+      color: #d7dcc8;
+      font-size: 20px;
+      margin: 0 0 8px;
+    }
+
+    a.download {
+      display: inline-block;
+      background: #2a4d87;
+      color: #9ea78d;
+      border: 2px solid #9ea78d;
+      padding: 10px 14px;
+      font-weight: bold;
+      text-decoration: none;
+      margin: 8px 0 14px;
+    }
+
     input[type="file"] {
       display: none;
     }
@@ -125,27 +162,46 @@
   <main>
     <p><a href="airdrive.html">Back</a></p>
     <h1>AirDrive update</h1>
-    <p>See if your AirDrive is current, and install a newer version if it is not. The files on your 5 virtual floppy drives stay. They are not affected. Use Chrome or Edge on a computer, and leave the AirDrive plugged in until this page says the update is finished.</p>
+    <p>Click <strong>Check my AirDrive</strong>. A Bluetooth list opens. Select <strong>Model T AirDrive</strong>, then Pair.</p>
+    <div class="row">
+      <button type="button" id="btnCheck">Check my AirDrive</button>
+    </div>
+    <p id="status"></p>
 
-    <div class="card">
+    <div id="betaGuide" hidden>
+      <h2>One-time setup for this AirDrive</h2>
+      <p>CONGRATS you are one of the very first owners of a MT:AirDrive.</p>
+      <p>This AirDrive was one of the very first MT:AirDrives sold at VCF Montreal 2026 and is on a version of the firmware that cannot easily update via Bluetooth. As such, it needs a special one-time setup on a Windows computer to get the new firmware. After this update it then matches every newer AirDrive and then you will not open the case again. You do not need to do this update, but it will give you some new features (better wake-up etc), but it will require you do a few more steps to update.</p>
+      <p>Your floppy files should stay. Save them on your computer first (just in case).</p>
+      <ol class="steps">
+        <li>Open the AirDrive disk manager on this website (like you did to see this). Click <strong>BACKUP All 5 Disks at ONCE</strong> and keep that file.</li>
+        <li>Remove the batteries from your AirDrive. Then remove the front label (Model 100 version on the top, just peel it up, try not to bend it, also it may be sharp so be careful). You will then see a small screw. Remove that. Then the top of the case can be removed.</li>
+        <li>Pull the PCB board up slightly to access the USB port. It is just a pressure fit, so you could use a small screwdriver to help lift it up a bit, and once it comes up slightly, stop. The battery connectors stay in place (there is enough wire to lift it without removing these wires). With the PCB up, connect a USB-C cable to your Windows computer. The cable must do data as well as power. A power-only cable will not work.</li>
+        <li>Use a Windows 10 or 11 computer that has Bluetooth. Download AirDrive Setup with the button below. The download is one zip. It contains <strong>airdrive_setup.bat</strong>, the updater, the firmware, and a copy of these instructions.</li>
+        <li>Plug the USB cable from the AirDrive into that Windows computer.</li>
+        <li>Press the reset button twice, quickly. A drive named <strong>NICENANO</strong> appears.</li>
+        <li>Unzip the download and run <strong>airdrive_setup.bat</strong>. Windows might warn you this program is not safe. It is safe. The high Microsoft registration fee to remove this warning has not been paid. The program copies the firmware, then asks you to press reset twice again, then copies the updater. Leave the cable plugged in until it says the AirDrive is finished.</li>
+        <li>When it is done, unplug the USB cable. Close the case. Press the PCB down somewhat hard so it pressure-fits again. Tuck in the battery wires so the lid closes fully. Replace the screw and the batteries, and turn the AirDrive on.</li>
+        <li>Return here and click <strong>Check my AirDrive</strong> again. A date means the one-time setup worked. You are done.</li>
+      </ol>
+      <p><a class="download" href="airdrive_setup.zip">Download AirDrive Setup</a></p>
+    </div>
+
+    <div class="card" id="updateCard">
       <p class="label">Latest version</p>
-      <p class="date" id="publishedDate" data-edition="2026-11-10">November 10, 2026</p>
+      <p class="date" id="publishedDate" data-edition="2026-11-12">November 12, 2026</p>
       <p class="label">What's new</p>
-      <p id="whatsNew">New version highlights: OTA firmware updates and firmware checks. Updated game names to reduce any legal/trademark conflicts. Improved AirDrive wake-up process, so less chance of Disk not ready errors during menu loads. Highly recommend you do this update.</p>
+      <p id="whatsNew">New version highlights: OTA firmware updates and firmware checks. Updated game names to reduce any legal/trademark conflicts. Improved AirDrive wake-up process, so less chance of Disk not ready errors during menu loads. The address shown while TS-DOS loads is portacoco.com/airdrive.html. Highly recommend you do this update.</p>
       <p id="result">Connect your AirDrive to see if it already has this version.</p>
-      <div class="row">
-        <button type="button" id="btnCheck">Check my AirDrive</button>
-        <button type="button" id="btnInstall" hidden>Install this update</button>
-        <button type="button" id="btnContinue" hidden>Continue</button>
-      </div>
-      <p id="status"></p>
+      <button type="button" id="btnInstall" hidden>Install this update</button>
+      <button type="button" id="btnContinue" hidden>Select AirDrive</button>
       <div id="track"><div id="fill"></div></div>
     </div>
 
     <details>
-      <summary>The update already restarted my AirDrive</summary>
-      <p>In the Bluetooth list, choose <strong>AdaDFU</strong>. That is your AirDrive while it is updating.</p>
-      <button type="button" id="btnResume">Continue the update</button>
+      <summary>My AirDrive restarted and I do not see Model T AirDrive</summary>
+      <p>Unplug the AirDrive, then plug it back in. It comes back as <strong>Model T AirDrive</strong>. The update was not written. Your files are still there.</p>
+      <button type="button" id="btnResume" hidden>Start over</button>
     </details>
   </main>
 
@@ -157,6 +213,8 @@
     const resultEl = document.getElementById("result");
     const statusEl = document.getElementById("status");
     const fillEl = document.getElementById("fill");
+    const updateCard = document.getElementById("updateCard");
+    const betaGuide = document.getElementById("betaGuide");
     const btnCheck = document.getElementById("btnCheck");
     const btnInstall = document.getElementById("btnInstall");
     const btnContinue = document.getElementById("btnContinue");
@@ -194,6 +252,11 @@
       btnContinue.hidden = true;
     }
 
+    function showBeta(on) {
+      betaGuide.hidden = !on;
+      updateCard.hidden = on;
+    }
+
     async function loadPublished() {
       const infoRes = await fetch("airdrive_firmware/airdrive_info.json", { cache: "no-store" });
       if (!infoRes.ok) throw new Error("missing");
@@ -217,14 +280,15 @@
 
     function describeDevice(deviceEdition) {
       const latest = pretty(publishedEdition);
+      showBeta(!deviceEdition);
       if (!deviceEdition) {
-        resultEl.textContent = "Your AirDrive does not report a version yet. The newest published version is " + latest + "." + (image ? "" : " The update file is not on this page, so it cannot be installed from here.");
-        showInstall(true);
+        resultEl.textContent = "";
+        showInstall(false);
         return;
       }
       const yours = pretty(deviceEdition);
       if (deviceEdition === publishedEdition) {
-        resultEl.textContent = "Your AirDrive is up to date. It has the " + yours + " version.";
+        resultEl.textContent = "Your AirDrive is up to date. It has the " + yours + " version. No setup is needed.";
         showInstall(false);
         return;
       }
@@ -233,7 +297,7 @@
         showInstall(false);
         return;
       }
-      resultEl.textContent = "Your AirDrive has the " + yours + " version. A newer one was published " + latest + "." + (image ? "" : " The update file is not on this page, so it cannot be installed from here.");
+      resultEl.textContent = "Your AirDrive has the " + yours + " version. A newer one was published " + latest + ". Click Install this update. The AirDrive restarts. Then click Select AirDrive and choose AirDrive in the list.";
       showInstall(true);
     }
 
@@ -244,7 +308,8 @@
       }
       setBusy(true);
       showInstall(false);
-      setStatus("Choose your AirDrive in the list.", 0);
+      showBeta(false);
+      setStatus("A Bluetooth list is open. Select Model T AirDrive, then Pair.", 0);
       try {
         airDevice = await AirDriveOta.pickAirDrive();
         setStatus("Reading the version on your AirDrive…", 0);
@@ -252,8 +317,9 @@
         describeDevice(deviceEdition);
         setStatus("", 0);
       } catch (err) {
-        if (err && err.name === "NotFoundError") resultEl.textContent = "No AirDrive was selected.";
+        if (err && err.name === "NotFoundError") resultEl.textContent = "Model T AirDrive was not selected. Click Check my AirDrive. In the list, select Model T AirDrive, then Pair.";
         else resultEl.textContent = err.message || "Could not read your AirDrive.";
+        setStatus("", 0);
       } finally {
         setBusy(false);
       }
@@ -261,59 +327,43 @@
 
     btnInstall.onclick = async () => {
       if (!image) return;
-      if (!navigator.bluetooth) {
-        resultEl.textContent = "Open this page in Chrome or Edge on a computer.";
-        return;
-      }
       setBusy(true);
-      setStatus("Restarting your AirDrive…", 5);
+      setStatus("Restarting your AirDrive.", 5);
       try {
         if (!airDevice) airDevice = await AirDriveOta.pickAirDrive();
         await AirDriveOta.rebootToDfu(airDevice);
-        resultEl.textContent = "Your AirDrive is restarting. When the next list appears, choose AdaDFU. That is your AirDrive while it updates.";
+        resultEl.textContent = "Your AirDrive restarted. Click Select AirDrive. In the list, select AirDrive, then Pair.";
         btnInstall.hidden = true;
         btnContinue.hidden = false;
         setStatus("", 8);
       } catch (err) {
-        if (err && err.name === "NotFoundError") resultEl.textContent = "No AirDrive was selected.";
+        if (err && err.name === "NotFoundError") resultEl.textContent = "Model T AirDrive was not selected. Click Install this update and select Model T AirDrive.";
         else resultEl.textContent = err.message || "The update did not start.";
       } finally {
         setBusy(false);
       }
     };
 
-    async function sendUpdate() {
+    btnContinue.onclick = async () => {
       if (!image) return;
       setBusy(true);
-      setStatus("Choose AdaDFU in the list.", 8);
+      setStatus("A Bluetooth list is open. Select AirDrive, then Pair.", 8);
       try {
         const device = await AirDriveOta.pickDfu();
         await AirDriveOta.flashDfu(device, image, (pct, text) => setStatus(text, pct));
         resultEl.textContent = "Update finished. Your AirDrive has the " + pretty(image.edition || publishedEdition) + " version. Your files were kept.";
         btnContinue.hidden = true;
-        btnInstall.hidden = true;
-        setStatus("You can unplug the AirDrive when it shows up again in the disk manager.", 100);
+        setStatus("You can unplug the AirDrive when it shows up again as Model T AirDrive.", 100);
       } catch (err) {
-        if (err && err.name === "NotFoundError") {
-          resultEl.textContent = "AdaDFU was not selected. If it is still in the list, click Continue.";
-        } else {
-          resultEl.textContent = (err.message || "The update did not finish.") + " Leave the AirDrive plugged in. If AdaDFU is still in the list, click Continue.";
-        }
+        resultEl.textContent = (err.message || "The update did not finish.") + " Leave it plugged in. If AirDrive is still in the list, click Select AirDrive.";
         btnContinue.hidden = false;
+        setStatus("", 8);
       } finally {
         setBusy(false);
       }
-    }
-
-    btnContinue.onclick = sendUpdate;
+    };
     btnResume.onclick = () => {
-      if (!image) {
-        resultEl.textContent = "The latest version could not be loaded. Reload this page.";
-        return;
-      }
-      btnContinue.hidden = false;
-      resultEl.textContent = "In the Bluetooth list, choose AdaDFU. That is your AirDrive while it is updating.";
-      sendUpdate();
+      resultEl.textContent = "Unplug the AirDrive, then plug it back in. It comes back as Model T AirDrive if the update was not written.";
     };
   </script>
 </body>

@@ -4,11 +4,11 @@
   "bytes": 229724,
   "device_type": 82,
   "softdevice": "0x00B6",
-  "sha256": "aa5c3a9fb75880674c3e88649197b3f33e6478fa2c8138e55f9e42c6d12b032e",
-  "edition": "2026-11-10",
-  "published": "November 10, 2026",
-  "built": "2026-11-10T05:58:16Z",
+  "sha256": "9f261a636d25e53312ad366dafe603b3a89856854f3129af2e86d0e87f839812",
+  "edition": "2026-11-12",
+  "published": "November 12, 2026",
+  "whatsNew": "New version highlights: OTA firmware updates and firmware checks. Updated game names to reduce any legal/trademark conflicts. Improved AirDrive wake-up process, so less chance of Disk not ready errors during menu loads. The address shown while TS-DOS loads is portacoco.com/airdrive.html. Highly recommend you do this update.",
+  "built": "2026-11-12T13:50:06Z",
   "source": "firmware.zip",
-  "note": "Application only. Does not include the five virtual disks.",
-  "whatsNew": "New version highlights: OTA firmware updates and firmware checks. Updated game names to reduce any legal/trademark conflicts. Improved AirDrive wake-up process, so less chance of Disk not ready errors during menu loads. Highly recommend you do this update."
+  "note": "Application only. Does not include the five virtual disks."
 }
