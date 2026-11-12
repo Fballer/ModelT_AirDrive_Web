@@ -36,6 +36,11 @@
       z-index: 30;
     }
 
+    .tip:hover,
+    .tip:focus-within {
+      z-index: 400;
+    }
+
     .tip-box {
       display: none;
       position: absolute;
@@ -46,7 +51,7 @@
       background: #111;
       color: #fff;
       border: 3px solid #ffd24a;
-      z-index: 30;
+      z-index: 400;
       text-align: left;
       font-weight: normal;
       font-size: 14px;
@@ -294,6 +299,8 @@
       padding: 15px;
       border-radius: 5px;
       transition: all 0.2s;
+      position: relative;
+      z-index: 50;
     }
 
     .pc-header {
@@ -304,7 +311,7 @@
       padding-bottom: 15px;
       margin-bottom: 15px;
       position: relative;
-      z-index: 5;
+      z-index: 60;
     }
 
     .pc-header h2 {
