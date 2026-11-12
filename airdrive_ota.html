@@ -222,17 +222,31 @@
 
     .endlinks {
       margin-top: 28px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 18px;
+    }
+
+    a.return {
+      display: inline-block;
+      background: #2a4d87;
+      color: #d7dcc8;
+      border: 2px solid #d7dcc8;
+      padding: 12px 16px;
       font-size: 18px;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    .credit {
+      margin-top: 22px;
+      color: #d7dcc8;
+      font-size: 16px;
+      line-height: 1.45;
     }
   </style>
 </head>
 
 <body>
   <main>
-    <p><a href="airdrive.html">Back</a></p>
+    <p class="endlinks"><a class="return" href="airdrive.html">Return to File Manager</a></p>
     <h1>AirDrive update</h1>
     <p>Click <strong>Check my AirDrive</strong>. A Bluetooth list opens. Select <strong>Model T AirDrive</strong>, then Pair. If it is not in the list, press reset on the AirDrive once. It turns Bluetooth off to save the battery, and reset wakes it up. On Windows, if Bluetooth settings is already connected to it as a keyboard, remove Model T AirDrive there first, then select it on this page. Do not pair it from the Windows Bluetooth screen. A Mac does not need that step.</p>
     <div class="row">
@@ -276,10 +290,8 @@
       <div id="track"><div id="fill"></div><div id="pct">0%</div></div>
     </div>
 
-    <p class="endlinks">
-      <a href="airdrive.html">Main file manager page</a>
-      <a href="https://www.portacoco.com/">PortaCoCo.com</a>
-    </p>
+    <p class="endlinks"><a class="return" href="airdrive.html">Return to File Manager</a></p>
+    <p class="credit">The MT: AirDrive was created by <a href="https://www.portacoco.com/">PortaCoCo</a>. © 2026. Visit <a href="https://www.portacoco.com/">PortaCoCo.com</a> to see their other products.</p>
   </main>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
