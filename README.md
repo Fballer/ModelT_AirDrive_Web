@@ -14,7 +14,8 @@ The full guide is [DEPLOY.md](DEPLOY.md): how the pages work, every file the sit
 
 | File | What it is |
 |---|---|
-| `airdrive.html` | Disk manager. All lowercase. People may copy only this page. |
+| `airdrive.html` | Disk manager. All lowercase. People may copy this page. |
+| `m100-basic.js` | BASIC convert used by the disk manager. Keep it next to `airdrive.html`. |
 | `airdrive_help.html` | Help. The manager always opens it on portacoco.com. |
 | `airdrive_ota.html` | Update page. The manager always opens it on portacoco.com. |
 | `airdrive_ota.js` | Bluetooth update code used by the update page. |

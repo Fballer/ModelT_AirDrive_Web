@@ -19,7 +19,7 @@ Two buttons leave the manager and always open the official site:
 
 **Check for updates** is the dark button on the right. It is easy to miss. There is no button named "Update firmware."
 
-Someone may copy only `airdrive.html` and host that one page somewhere else. Disk connect and backup still work. Help and updates still open portacoco.com. They do not get a copy of the firmware.
+Someone may copy `airdrive.html` and host that page somewhere else. Disk connect and backup still work. Help and updates still open portacoco.com. They do not get a copy of the firmware. BASIC convert also needs `m100-basic.js` in the same folder.
 
 `airdrive_help.html` is the owner help page.
 
@@ -40,6 +40,7 @@ All of these sit in the same folder as the existing `airdrive.html`. Names are l
 | File | Required | What it is |
 |---|---|---|
 | `airdrive.html` | yes | Disk manager. The only manager filename. |
+| `m100-basic.js` | yes | Tokenizes and detokenizes Model 100/200 BASIC for the convert buttons. |
 | `airdrive_help.html` | yes | Help page. |
 | `airdrive_ota.html` | yes | Update page. |
 | `airdrive_ota.js` | yes | Bluetooth update code used by the update page. |
