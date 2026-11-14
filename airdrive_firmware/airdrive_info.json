@@ -4,11 +4,11 @@
   "bytes": 229596,
   "device_type": 82,
   "softdevice": "0x00B6",
-  "sha256": "ec170293741edb58c85b7728833608d34ab45e17601bad4e5c3d643a141414ad",
-  "edition": "2026-11-19",
-  "published": "November 19, 2026",
-  "whatsNew": "New version highlights: OTA firmware updates and firmware checks. Updated game names to reduce any legal/trademark conflicts. Improved AirDrive wake-up process, so less chance of Disk not ready errors during menu loads. The address shown while TS-DOS loads is portacoco.com/airdrive.html. Block-TRS 100 now shows the 1 on the gameplay screen. Chomp-200 now starts after it loads. After Install, the Tandy says Now Press F4=AirDrive or F8=Main Menu. Quitting Block-TRS 200 clears the whole screen, including the top line, the same way Chomp does. The Model 200 menu uses CLS again. Highly recommend you do this update.",
-  "built": "2026-11-14T22:10:14Z",
+  "sha256": "05965b84390abf3b64524b9d617bac825267d1d54cab98f465b7443a0fb2289b",
+  "edition": "2026-11-20",
+  "published": "November 20, 2026",
+  "whatsNew": "New version highlights: OTA firmware updates and firmware checks. Updated game names to reduce any legal/trademark conflicts. Improved AirDrive wake-up process, so less chance of Disk not ready errors during menu loads. The address shown while TS-DOS loads is portacoco.com/airdrive.html. Block-TRS 100 now shows the 1 on the gameplay screen. Chomp-200 now starts after it loads. After Install, the Tandy says Now Press F4=AirDrive or F8=Main Menu. Model 200 game quit and the AIRDRV menu clear are back to the November 16 behavior. Highly recommend you do this update.",
+  "built": "2026-11-14T22:18:11Z",
   "source": "firmware.zip",
   "note": "Application only. Does not include the five virtual disks."
 }
