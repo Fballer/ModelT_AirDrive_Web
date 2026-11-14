@@ -152,6 +152,14 @@
       color: #d7dcc8;
     }
 
+    #paused {
+      margin: 14px 0 10px;
+      color: #d7dcc8;
+      font-size: 18px;
+      font-weight: bold;
+      line-height: 1.4;
+    }
+
     #status {
       min-height: 1.4em;
       color: #ffffff;
@@ -261,11 +269,11 @@
 <body>
   <main>
     <h1>MT:AirDrive Firmware Update</h1>
-    <p>Click <strong>Check my AirDrive</strong>. A Bluetooth list opens. Select <strong>Model T AirDrive</strong>, then Pair. If it is not in the list, press reset on the AirDrive once. It turns Bluetooth off to save the battery, and reset wakes it up. On Windows, if Bluetooth settings is already connected to it as a keyboard, remove Model T AirDrive there first, then select it on this page. Do not pair it from the Windows Bluetooth screen. A Mac does not need that step.</p>
+    <p>Click <strong>Check my AirDrive</strong>. A Bluetooth list opens. Select <strong>Model T AirDrive</strong>, then Pair. If it is not in the list, press reset on the AirDrive once. It turns Bluetooth off to save the battery, and reset wakes it up. On Windows, if Bluetooth settings is already connected to it as a keyboard, remove Model T AirDrive there first, then select it on this page. Do not pair it from the Windows Bluetooth screen. On a Mac, if Model T AirDrive does not appear, open System Settings, Bluetooth, find Model T AirDrive, and click Forget This Device. Then select it from this page. Do not pair it from Mac System Settings.</p>
     <div class="row">
       <span class="tip">
         <button type="button" id="btnCheck">Check my AirDrive</button>
-        <span class="tip-box">If Model T AirDrive is not in the Bluetooth list, press the reset button on the AirDrive once to wake the device. On Windows, if Bluetooth settings already has it as a keyboard, remove it there, then pair from this page.</span>
+        <span class="tip-box">If Model T AirDrive is not in the Bluetooth list, press the reset button on the AirDrive once to wake the device. On Windows, if Bluetooth settings already has it as a keyboard, remove it there, then pair from this page. On a Mac, if it still does not appear, open System Settings, Bluetooth, and Forget Model T AirDrive, then select it from this page.</span>
       </span>
     </div>
     <p id="status"></p>
@@ -292,11 +300,12 @@
 
     <div class="card" id="updateCard">
       <p class="label">Latest version</p>
-      <p class="date" id="publishedDate" data-edition="2026-11-17">November 17, 2026</p>
+      <p class="date" id="publishedDate" data-edition="2026-11-18">November 18, 2026</p>
       <p class="label">What's new</p>
-      <p id="whatsNew">New version highlights: OTA firmware updates and firmware checks. Updated game names to reduce any legal/trademark conflicts. Improved AirDrive wake-up process, so less chance of Disk not ready errors during menu loads. The address shown while TS-DOS loads is portacoco.com/airdrive.html. Block-TRS 100 now shows the 1 on the gameplay screen. Chomp-200 now starts after it loads. After Install, the Tandy says Now Press F4=AirDrive or F8=Main Menu. Block-TRS 200 now restores the screen to 0,0 when you quit, so the AIRDRV menu and TS-DOS start at the top left. Highly recommend you do this update.</p>
+      <p id="whatsNew">New version highlights: OTA firmware updates and firmware checks. Updated game names to reduce any legal/trademark conflicts. Improved AirDrive wake-up process, so less chance of Disk not ready errors during menu loads. The address shown while TS-DOS loads is portacoco.com/airdrive.html. Block-TRS 100 now shows the 1 on the gameplay screen. Chomp-200 now starts after it loads. After Install, the Tandy says Now Press F4=AirDrive or F8=Main Menu. Block-TRS 200 now restores the screen to 0,0 when you quit, so the AIRDRV menu and TS-DOS start at the top left. The Model 200 menu no longer stops with a syntax error. Highly recommend you do this update.</p>
       <p id="result">Connect your AirDrive to see if it already has this version.</p>
       <p id="stay" class="stay" hidden>This update takes about 10 minutes and has two Bluetooth steps. After you click Install this update, the bar may stop at about 8%. That is normal. The AirDrive is restarting. Then click Select AirDrive on this page and pick AirDrive in the list, not Model T AirDrive. After that, leave the AirDrive alone. Stay on this page. Do not press Back or reload. Do not press buttons on the AirDrive itself. Keep this computer awake. Do not close the laptop or let it sleep. If it goes to sleep, the update stops. Unplug the AirDrive, plug it back in, click Check my AirDrive, and select AirDrive. Your files stay.</p>
+      <p id="paused" hidden></p>
       <button type="button" id="btnInstall" hidden>Install this update</button>
       <button type="button" id="btnContinue" hidden>Select AirDrive</button>
       <p id="done" class="done" hidden></p>
@@ -308,7 +317,7 @@
   </main>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-  <script src="airdrive_ota.js?v=20261115b"></script>
+  <script src="airdrive_ota.js?v=20261118a"></script>
   <script>
     const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     const dateEl = document.getElementById("publishedDate");
@@ -317,6 +326,7 @@
     const fillEl = document.getElementById("fill");
     const pctEl = document.getElementById("pct");
     const stayEl = document.getElementById("stay");
+    const pausedEl = document.getElementById("paused");
     const doneEl = document.getElementById("done");
     const updateCard = document.getElementById("updateCard");
     const betaGuide = document.getElementById("betaGuide");
@@ -378,6 +388,11 @@
       }
     }
 
+    function showPaused(text) {
+      pausedEl.hidden = !text;
+      pausedEl.textContent = text || "";
+    }
+
     async function keepAwake() {
       try {
         if (navigator.wakeLock) wakeLock = await navigator.wakeLock.request("screen");
@@ -403,6 +418,7 @@
     function showFinished() {
       holding = false;
       showWarning("");
+      showPaused("");
       releaseAwake();
       doneEl.textContent = finishMessage();
       doneEl.hidden = false;
@@ -444,16 +460,19 @@
         resultEl.textContent = "Your AirDrive is up to date. It has the " + yours + " version. No setup is needed.";
         showInstall(false);
         showWarning("");
+        showPaused("");
         return;
       }
       if (deviceEdition > publishedEdition) {
         resultEl.textContent = "Your AirDrive is newer (" + yours + ") than the version on this page (" + latest + "). Leave it as it is.";
         showInstall(false);
         showWarning("");
+        showPaused("");
         return;
       }
       resultEl.textContent = "Your AirDrive has the " + yours + " version. A newer one was published " + latest + ". This takes about 10 minutes and two Bluetooth picks. Click Install this update. When it pauses at about 8%, click Select AirDrive and pick AirDrive. Keep this computer awake.";
       showWarning(BEFORE_WARNING);
+      showPaused("");
       showInstall(true);
     }
 
@@ -464,6 +483,7 @@
       }
       setBusy(true);
       showInstall(false);
+      showPaused("");
       showBeta(false);
       setStatus("A Bluetooth list is open. Select Model T AirDrive. If an update already started, select AirDrive.", 0);
       try {
@@ -491,6 +511,7 @@
         if (err && err.name === "NotFoundError") resultEl.textContent = "Nothing was selected. Click Check my AirDrive. Select Model T AirDrive, or AirDrive if an update already started.";
         else resultEl.textContent = err.message || "Could not read your AirDrive.";
         showWarning("");
+        showPaused("");
         holding = false;
         releaseAwake();
         statusEl.textContent = resultEl.textContent;
@@ -511,14 +532,16 @@
       try {
         if (!airDevice) airDevice = await AirDriveOta.pickAirDrive();
         await AirDriveOta.rebootToDfu(airDevice);
-        resultEl.textContent = PAUSED_8;
+        resultEl.textContent = "";
+        showPaused(PAUSED_8);
         btnInstall.hidden = true;
         btnContinue.hidden = false;
-        setStatus(PAUSED_8, 8);
+        setStatus("Paused at 8%. Click Select AirDrive below.", 8);
       } catch (err) {
         if (err && err.name === "NotFoundError") resultEl.textContent = "Model T AirDrive was not selected. Click Install this update and select Model T AirDrive.";
         else resultEl.textContent = err.message || "The update did not start.";
         holding = false;
+        showPaused("");
         showWarning(BEFORE_WARNING);
         releaseAwake();
       } finally {
@@ -531,6 +554,7 @@
       setBusy(true);
       setStatus("A Bluetooth list is open. Select AirDrive, not Model T AirDrive, then Pair. After that, leave the AirDrive alone for about 10 minutes. Keep this computer awake.", 8);
       showWarning(DURING_WARNING);
+      showPaused("");
       holding = true;
       keepAwake();
       try {
