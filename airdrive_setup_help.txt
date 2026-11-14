@@ -23,4 +23,4 @@ Your floppy files should stay. Save them on your computer first (just in case).
 
 9. Return to the AirDrive update page and click Check my AirDrive again. A date means the one-time setup worked.
 
-10. On the Model 100, 102, or 200, the new features also need a fresh install of the programs. In BASIC, type KILL "AIRDRV.BA" and press Enter, then KILL "TSLOAD.CO" and press Enter. Plug the AirDrive into the computer. On a 100 or 102, type RUN "COM:98N1E" and short-press Install. On a 200, type RUN "COM:98N1ENN" and hold Install for 2 seconds. When it finishes, run AIRDRV.BA.
+10. On the Model 100, 102, or 200, the new features also need a fresh install of the programs. In BASIC, type KILL "AIRDRV.BA" and press Enter, then KILL "TSLOAD.CO" and press Enter. Plug the AirDrive into the computer. On a 100 or 102, type RUN "COM:98N1E" and short-press Install. On a 200, type RUN "COM:98N1ENN" and hold Install for 3+ seconds. When it finishes, run AIRDRV.BA.
