@@ -28,7 +28,7 @@ Someone may copy `airdrive.html` and host that page somewhere else. Disk connect
 **Check my AirDrive** asks the module for its edition date.
 
 - No date means one of the first ten beta units. The page shows the one-time Windows setup and the **Download AirDrive Setup** button. Those units still have the stock updater, which Chrome cannot talk to. They do not get an Install button.
-- A date means the new updater is already installed. If that date is older than the page, **Install this update** restarts the AirDrive. The next list says **AirDrive**. Select that. The five disks are not in the firmware file.
+- A date means the new updater is already installed. If that date is older than the page, **Install this update** restarts the AirDrive. The bar may stop at about **8%**. That is normal. Then click **Select AirDrive** on the page and pick **AirDrive**, not Model T AirDrive. The five disks are not in the firmware file.
 - The same date means it is already current. A newer date than the page means leave it.
 
 Chrome still blocks the old Nordic update service (`00001530-1212-efde-1523-785feabcd123`). The new updater uses a private AirDrive service instead, and it advertises as **AirDrive**. The running module still advertises as **Model T AirDrive**.
@@ -116,9 +116,9 @@ Build the firmware in the production tree, `MODEL_T_AirDrive-model-200-loader`. 
 
    Extract `airdrive_deploy.zip` in cPanel the same way as a website deploy. Replacing the whole zip also refreshes the update page. Uploading only the `airdrive_firmware` folder is enough when the HTML did not change, because the page loads the date and notes from `airdrive_info.json`.
 
-6. In Chrome, open https://www.portacoco.com/airdrive_ota.html. **Check my AirDrive** and select **Model T AirDrive**. A unit that already has the new updater and an older date can install from the page. Select **AirDrive** in the second list. A unit with no date is a beta unit and must use the Windows setup below. Do not try to send the firmware to a beta unit from the page.
+6. In Chrome, open https://www.portacoco.com/airdrive_ota.html. **Check my AirDrive** and select **Model T AirDrive**. A unit that already has the new updater and an older date can install from the page. After Install this update, a pause at about 8% is the restart. Click **Select AirDrive** and pick **AirDrive**. A unit with no date is a beta unit and must use the Windows setup below. Do not try to send the firmware to a beta unit from the page.
 
-7. If this firmware also changes the BASIC installer on the Tandy, the owner still runs **Install** on the computer afterward. The Bluetooth update does not rewrite the laptop.
+7. If this firmware also changes the BASIC installer on the Tandy, the owner still runs **Install** on the computer afterward. The Bluetooth update does not rewrite the laptop. In BASIC: **KILL "AIRDRV.BA"** then **KILL "TSLOAD.CO"**. Plug the AirDrive in. Model 100/102: `RUN "COM:98N1E"` and short-press Install. Model 200: `RUN "COM:98N1ENN"` and hold Install for **3+ seconds**. When it finishes, the screen says **Now Press F4=AirDrive or F8=Main Menu**.
 
 After the new updater is installed, losing power during a website update brings the module back on Bluetooth as **AirDrive**, so the owner can click **Select AirDrive** and try again. USB stays hidden. Before that updater is installed, a power loss after the send has started can leave the stock updater on USB only. That is why the ten beta units, and every new board, get the Windows program once before the case stays closed.
 
