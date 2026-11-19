@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tandy Virtual DVI — Bezel Screen Mockup</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap');
+
+    body {
+      background-color: #0a0d12;
+      color: #c9d1d9;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* CRT Glow Effects */
+    .glow-green {
+      box-shadow: inset 0 0 45px rgba(51, 255, 51, 0.28), 0 0 30px rgba(51, 255, 51, 0.38);
+    }
+    .glow-amber {
+      box-shadow: inset 0 0 45px rgba(255, 176, 0, 0.28), 0 0 30px rgba(255, 176, 0, 0.38);
+    }
+    .glow-bw {
+      box-shadow: inset 0 0 45px rgba(200, 225, 255, 0.22), 0 0 25px rgba(200, 225, 255, 0.28);
+    }
+
+    /* Scanlines Mesh Overlay */
+    .crt-scanlines {
+      background: linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0) 50%,
+        rgba(0, 0, 0, 0.42) 51%
+      );
+      background-size: 100% 4px;
+      pointer-events: none;
+    }
+
+    /* Curved Glass Tube Highlight */
+    .crt-glass-glare {
+      background: radial-gradient(
+        circle at 50% 30%,
+        rgba(255, 255, 255, 0.08) 0%,
+        rgba(255, 255, 255, 0.02) 45%,
+        rgba(0, 0, 0, 0.35) 85%,
+        rgba(0, 0, 0, 0.72) 100%
+      );
+      pointer-events: none;
+    }
+
+    /* Drive 0 Green LED */
+    .drive-led-active {
+      background-color: #22c55e !important;
+      box-shadow: 0 0 10px #22c55e, 0 0 20px #22c55e !important;
+    }
+
+    /* Custom range slider */
+    input[type=range] {
+      accent-color: #22c55e;
+    }
+  </style>
+</head>
+<body class="bg-[#0a0d12] text-[#c9d1d9] antialiased">
+
+  <!-- Header & Toolbar -->
+  <header class="w-full px-5 py-3 border-b border-gray-800 flex flex-wrap items-center justify-between gap-3 bg-[#11161d]/95 backdrop-blur sticky top-0 z-50">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-green-500/20 border border-green-500/40 flex items-center justify-center text-green-400 font-bold text-base">
+        T
+      </div>
+      <div>
+        <h1 class="text-sm font-bold text-white tracking-wide flex items-center gap-2">
+          AirDrive Virtual DVI
+          <span class="text-[10px] px-1.5 py-0.5 rounded bg-green-500/10 text-green-400 border border-green-500/30">MOCKUP V2</span>
+        </h1>
+        <p class="text-[11px] text-gray-400">Authentic Tandy Monitor &amp; DVI Screen Integration</p>
+      </div>
+    </div>
+
+    <!-- View Mode Selector (Borderless CRT first & default, Cinema deleted) -->
+    <div class="flex items-center bg-[#07090d] p-1 rounded-lg border border-gray-700 text-xs font-medium">
+      <button id="btnModeBorderless" onclick="setViewMode('borderless')" class="px-3.5 py-1.5 rounded-md bg-green-500 text-black font-semibold shadow transition-all flex items-center gap-1.5">
+        <span>⬛</span> Borderless CRT
+      </button>
+      <button id="btnModeFull" onclick="setViewMode('full')" class="px-3.5 py-1.5 rounded-md text-gray-300 hover:text-white transition-all flex items-center gap-1.5">
+        <span>💾</span> Full DVI Rig (Desk)
+      </button>
+    </div>
+
+    <!-- Phosphor Color Themes (Green is default) -->
+    <div class="flex items-center gap-2">
+      <span class="text-xs text-gray-400 mr-1">Phosphor:</span>
+      <button onclick="setTheme('green')" id="themeGreen" class="px-2.5 py-1 rounded border border-green-500 bg-green-500/20 text-green-400 text-xs font-medium transition-all flex items-center gap-1.5 shadow-[0_0_10px_rgba(34,197,94,0.2)]">
+        <span class="w-2.5 h-2.5 rounded-full bg-green-400 shadow-[0_0_8px_#22c55e]"></span> Green
+      </button>
+      <button onclick="setTheme('amber')" id="themeAmber" class="px-2.5 py-1 rounded border border-gray-700 bg-gray-800 text-gray-300 text-xs font-medium hover:bg-gray-700 transition-all flex items-center gap-1.5">
+        <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span> Amber
+      </button>
+      <button onclick="setTheme('bw')" id="themeBw" class="px-2.5 py-1 rounded border border-gray-700 bg-gray-800 text-gray-300 text-xs font-medium hover:bg-gray-700 transition-all flex items-center gap-1.5">
+        <span class="w-2.5 h-2.5 rounded-full bg-slate-200"></span> B&amp;W
+      </button>
+    </div>
+  </header>
+
+  <!-- Control Controls Sub-Bar -->
+  <div class="w-full px-5 py-2 flex flex-wrap items-center justify-between gap-4 text-xs text-gray-400 border-b border-gray-800/60 bg-[#0d1117]">
+    <div class="flex items-center gap-5 flex-wrap">
+      <!-- Fit Viewport Toggle -->
+      <label class="flex items-center gap-1.5 cursor-pointer select-none text-white font-medium">
+        <input type="checkbox" id="chkFitScreen" checked onchange="toggleFitScreen(this.checked)" class="rounded bg-gray-800 border-gray-700 text-green-500 focus:ring-0">
+        <span>Auto-Fit Window Max Size</span>
+      </label>
+
+      <!-- Zoom Slider (manual resize when not auto-fitting) -->
+      <div id="zoomContainer" class="flex items-center gap-2">
+        <span class="text-gray-300 font-medium">Scale / Resize:</span>
+        <input type="range" id="zoomSlider" min="360" max="1400" value="900" class="w-32 h-1.5 cursor-pointer" oninput="updateManualSize(this.value)">
+        <span id="zoomReadout" class="font-mono text-green-400 font-semibold w-14">900px</span>
+      </div>
+
+      <div class="h-4 w-px bg-gray-700"></div>
+
+      <!-- Effects Toggles -->
+      <label class="flex items-center gap-1.5 cursor-pointer select-none">
+        <input type="checkbox" id="chkScanlines" checked onchange="toggleScanlines(this.checked)" class="rounded bg-gray-800 border-gray-700 text-green-500 focus:ring-0">
+        <span>Scanlines</span>
+      </label>
+      <label class="flex items-center gap-1.5 cursor-pointer select-none">
+        <input type="checkbox" id="chkGlow" checked onchange="toggleGlow(this.checked)" class="rounded bg-gray-800 border-gray-700 text-green-500 focus:ring-0">
+        <span>Phosphor Glow</span>
+      </label>
+      <label class="flex items-center gap-1.5 cursor-pointer select-none">
+        <input type="checkbox" id="chkCurve" onchange="toggleCurve(this.checked)" class="rounded bg-gray-800 border-gray-700 text-green-500 focus:ring-0">
+        <span>Curved Glass</span>
+      </label>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <!-- Interactive Action Buttons -->
+      <button onclick="simulateDiskAccess()" class="px-2.5 py-1 rounded bg-blue-600/20 border border-blue-500/40 text-blue-300 hover:bg-blue-600/30 transition flex items-center gap-1">
+        💾 Simulate Floppy Read
+      </button>
+      <button onclick="loadSampleBasic()" class="px-2.5 py-1 rounded bg-gray-800 border border-gray-700 text-gray-300 hover:bg-gray-700 transition">
+        ▶ Run BASIC Demo
+      </button>
+      <button onclick="clearCrt()" class="px-2.5 py-1 rounded bg-gray-800 border border-gray-700 text-gray-300 hover:bg-gray-700 transition">
+        CLS
+      </button>
+    </div>
+  </div>
+
+  <!-- Stage Area (Full Viewport Centered) -->
+  <main id="mainStage" class="w-full flex-1 flex flex-col items-center justify-center p-2 sm:p-4 overflow-hidden relative">
+
+    <!-- Container for the Bezel / Screen -->
+    <div id="bezelContainer" class="relative mx-auto transition-all duration-200 ease-out select-none flex items-center justify-center">
+
+      <!-- INNER CRT SCREEN STAGE -->
+      <div id="screenStage" class="overflow-hidden flex items-center justify-center glow-green transition-all duration-200">
+
+        <!-- CRT Canvas (80x24 Virtual Terminal) -->
+        <canvas id="crtCanvas" class="w-full h-full block bg-[#000a02]" width="1600" height="1200" tabindex="0"></canvas>
+
+        <!-- Scanlines Overlay -->
+        <div id="scanlinesOverlay" class="crt-scanlines absolute inset-0 z-20 pointer-events-none"></div>
+
+        <!-- Glass Curvature & Glare Overlay -->
+        <div id="glassGlareOverlay" class="crt-glass-glare absolute inset-0 z-20 pointer-events-none"></div>
+
+        <!-- Inner Bezel Depth Shadow -->
+        <div id="innerShadowOverlay" class="absolute inset-0 z-20 pointer-events-none shadow-[inset_0_0_24px_rgba(0,0,0,0.85)]"></div>
+      </div>
+
+      <!-- OVERLAID BEZEL GRAPHIC (Clipart from user, defringed with smooth anti-aliased edges) -->
+      <img id="bezelGraphic"
+           src="./tandy_dvi_bezel_full.png"
+           alt="Tandy CRT Monitor & DVI Bezel"
+           class="hidden absolute inset-0 z-30 w-full h-full pointer-events-none drop-shadow-[0_15px_35px_rgba(0,0,0,0.85)] block">
+
+      <!-- DVI UNIT DISK 0 ACTIVITY LED (Overlaid over Drive 0 in Full Rig mode) -->
+      <div id="driveLed"
+           class="hidden absolute z-40 w-2.5 h-1.5 rounded-sm bg-[#14532d] border border-[#166534] transition-all duration-100"
+           style="left: 46.8%; top: 74.2%;"></div>
+
+      <!-- DVI UNIT POWER LED (Red LED under badge) -->
+      <div id="powerLed"
+           class="hidden absolute z-40 w-2 h-2 rounded-full bg-[#ef4444] shadow-[0_0_6px_#ef4444]"
+           style="left: 14.9%; top: 79.4%;"></div>
+
+    </div>
+
+  </main>
+
+  <!-- Compact Status / Readout Footer -->
+  <footer class="w-full px-5 py-2 border-t border-gray-800/70 bg-[#0d1117] flex flex-wrap items-center justify-between text-[11px] text-gray-400">
+    <div class="flex items-center gap-4">
+      <span>Mode: <strong id="readoutMode" class="text-white">Borderless CRT (Max Screen)</strong></span>
+      <span>•</span>
+      <span>Phosphor: <strong id="readoutTheme" class="text-green-400">P1 Green (#33ff33)</strong></span>
+      <span>•</span>
+      <span>Text Grid: <strong class="text-white">80 Cols × 24 Rows (All visible)</strong></span>
+    </div>
+    <div class="flex items-center gap-3">
+      <span id="readoutSize" class="font-mono text-gray-300">Active: 100% Window Fit</span>
+      <span>•</span>
+      <span class="text-gray-500">Click CRT and type anywhere</span>
+    </div>
+  </footer>
+
+  <script>
+    // --- State & Config ---
+    let currentMode = 'borderless'; // 'borderless' (default) | 'full'
+    let currentTheme = 'green';     // 'green' (default) | 'amber' | 'bw'
+    let isFitScreen = true;
+    const cols = 80;
+    const rows = 24;
+    let textBuffer = [];
+    let curCol = 0;
+    let curRow = 0;
+    let cursorVisible = true;
+
+    // Theme Palettes
+    const themes = {
+      green: {
+        bg: '#000c02',
+        fg: '#33ff33',
+        glow: 'rgba(51, 255, 51, 0.45)',
+        class: 'glow-green',
+        name: 'P1 Green (#33ff33)'
+      },
+      amber: {
+        bg: '#0c0800',
+        fg: '#ffb000',
+        glow: 'rgba(255, 176, 0, 0.45)',
+        class: 'glow-amber',
+        name: 'P3 Amber (#ffb000)'
+      },
+      bw: {
+        bg: '#05070a',
+        fg: '#f0f6fc',
+        glow: 'rgba(200, 225, 255, 0.35)',
+        class: 'glow-bw',
+        name: 'Paper White (#f0f6fc)'
+      }
+    };
+
+    // Initialize Text Buffer
+    function initBuffer() {
+      textBuffer = [];
+      for (let r = 0; r < rows; r++) {
+        let row = [];
+        for (let c = 0; c < cols; c++) {
+          row.push({ char: ' ', inv: false });
+        }
+        textBuffer.push(row);
+      }
+    }
+
+    function printString(str, inv = false) {
+      for (let i = 0; i < str.length; i++) {
+        const ch = str[i];
+        if (ch === '\n') {
+          curRow++;
+          curCol = 0;
+          if (curRow >= rows) scrollUp();
+          continue;
+        }
+        if (curCol >= cols) {
+          curCol = 0;
+          curRow++;
+          if (curRow >= rows) scrollUp();
+        }
+        textBuffer[curRow][curCol] = { char: ch, inv: inv };
+        curCol++;
+      }
+      renderCanvas();
+    }
+
+    function scrollUp() {
+      textBuffer.shift();
+      let newRow = [];
+      for (let c = 0; c < cols; c++) newRow.push({ char: ' ', inv: false });
+      textBuffer.push(newRow);
+      curRow = rows - 1;
+    }
+
+    function clearCrt() {
+      initBuffer();
+      curCol = 0;
+      curRow = 0;
+      printString("Ok\n");
+    }
+
+    function loadSampleBasic() {
+      initBuffer();
+      curCol = 0;
+      curRow = 0;
+      const banner =
+        "Model 100 80-Column CRT (Virtual DVI)\n" +
+        "(C) 1983 Tandy Corporation    32768 Bytes Free\n\n" +
+        "10 ' TANDY DISK/VIDEO INTERFACE (DVI) 80X24 VT100 ACTIVE\n" +
+        "20 SCREEN 1: CLS\n" +
+        "30 PRINT \"AIRDRIVE VIRTUAL DVI SYSTEM READY.\"\n" +
+        "40 FOR I = 1 TO 80: PRINT \"=\";: NEXT I: PRINT\n" +
+        "50 PRINT \"COLUMN 0 TO 79 AND ROWS 0 TO 23 ARE 100% VISIBLE WITH NO CLIPPING!\"\n" +
+        "60 PRINT \"DEFAULT THEME: P1 GREEN PHOSPHOR AT MAXIMUM WINDOW SIZE.\"\n" +
+        "70 PRINT \"SMOOTH ANTI-ALIASED EDGES ON TANDY BEZEL AND DVI FLOPPY UNIT.\"\n" +
+        "RUN\n" +
+        "AIRDRIVE VIRTUAL DVI SYSTEM READY.\n" +
+        "================================================================================\n" +
+        "COLUMN 0 TO 79 AND ROWS 0 TO 23 ARE 100% VISIBLE WITH NO CLIPPING!\n" +
+        "DEFAULT THEME: P1 GREEN PHOSPHOR AT MAXIMUM WINDOW SIZE.\n" +
+        "SMOOTH ANTI-ALIASED EDGES ON TANDY BEZEL AND DVI FLOPPY UNIT.\n\n" +
+        "Ok\n";
+      printString(banner);
+    }
+
+    // --- Canvas Rendering with Safe Insets ---
+    const canvas = document.getElementById('crtCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function renderCanvas() {
+      const w = canvas.width;
+      const h = canvas.height;
+      const th = themes[currentTheme];
+
+      // Screen background
+      ctx.fillStyle = th.bg;
+      ctx.fillRect(0, 0, w, h);
+
+      // Safe Inset Calculations:
+      // In Full DVI mode, the bezel glass curves at corners and edges.
+      // We apply 6.5% horizontal and 9.5% vertical padding so row 0 and col 0 are 100% clear of all bezel curves!
+      // In Borderless mode, we use a clean 3% margin.
+      let padLeft, padRight, padTop, padBottom;
+      if (currentMode === 'full') {
+        padLeft = w * 0.055;
+        padRight = w * 0.055;
+        padTop = h * 0.065;
+        padBottom = h * 0.065;
+      } else {
+        padLeft = w * 0.03;
+        padRight = w * 0.03;
+        padTop = h * 0.04;
+        padBottom = h * 0.04;
+      }
+
+      const usableW = w - padLeft - padRight;
+      const usableH = h - padTop - padBottom;
+      const charW = usableW / cols;
+      const charH = usableH / rows;
+
+      ctx.font = `bold ${Math.round(charH * 0.82)}px "Share Tech Mono", "VT323", monospace`;
+      ctx.textBaseline = "top";
+
+      // Draw Characters
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const item = textBuffer[r][c];
+          const x = padLeft + c * charW;
+          const y = padTop + r * charH;
+
+          if (item.inv) {
+            ctx.fillStyle = th.fg;
+            ctx.fillRect(x, y, charW, charH);
+            ctx.fillStyle = th.bg;
+            ctx.fillText(item.char, x + (charW * 0.1), y + (charH * 0.08));
+          } else {
+            if (item.char !== ' ') {
+              if (document.getElementById('chkGlow').checked) {
+                ctx.shadowColor = th.glow;
+                ctx.shadowBlur = 6;
+              } else {
+                ctx.shadowBlur = 0;
+              }
+              ctx.fillStyle = th.fg;
+              ctx.fillText(item.char, x + (charW * 0.1), y + (charH * 0.08));
+            }
+          }
+        }
+      }
+
+      // Draw Cursor
+      if (cursorVisible && curRow < rows && curCol < cols) {
+        const cx = padLeft + curCol * charW;
+        const cy = padTop + curRow * charH;
+        ctx.fillStyle = th.fg;
+        ctx.shadowColor = th.glow;
+        ctx.shadowBlur = 8;
+        ctx.fillRect(cx, cy + (charH * 0.8), charW * 0.85, charH * 0.18);
+      }
+      ctx.shadowBlur = 0;
+    }
+
+    // Cursor Blink Loop
+    setInterval(() => {
+      cursorVisible = !cursorVisible;
+      renderCanvas();
+    }, 530);
+
+    // --- Interactive Typing ---
+    window.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT') return;
+
+      if (e.key === 'Backspace') {
+        e.preventDefault();
+        if (curCol > 0) {
+          curCol--;
+          textBuffer[curRow][curCol] = { char: ' ', inv: false };
+          renderCanvas();
+        }
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        curRow++;
+        curCol = 0;
+        if (curRow >= rows) scrollUp();
+        renderCanvas();
+      } else if (e.key.length === 1) {
+        e.preventDefault();
+        if (curCol < cols) {
+          textBuffer[curRow][curCol] = { char: e.key.toUpperCase(), inv: false };
+          curCol++;
+          if (curCol >= cols) {
+            curCol = 0;
+            curRow++;
+            if (curRow >= rows) scrollUp();
+          }
+          renderCanvas();
+        }
+      }
+    });
+
+    // --- View Mode Controls ---
+    function setViewMode(mode) {
+      currentMode = mode;
+      const bContainer = document.getElementById('bezelContainer');
+      const bImg = document.getElementById('bezelGraphic');
+      const sStage = document.getElementById('screenStage');
+      const driveLed = document.getElementById('driveLed');
+      const powerLed = document.getElementById('powerLed');
+      const mainStage = document.getElementById('mainStage');
+
+      const btnBorderless = document.getElementById('btnModeBorderless');
+      const btnFull = document.getElementById('btnModeFull');
+
+      if (mode === 'borderless') {
+        btnBorderless.className = "px-3.5 py-1.5 rounded-md bg-green-500 text-black font-semibold shadow transition-all flex items-center gap-1.5";
+        btnFull.className = "px-3.5 py-1.5 rounded-md text-gray-300 hover:text-white transition-all flex items-center gap-1.5";
+
+        bImg.style.display = 'none';
+        driveLed.style.display = 'none';
+        powerLed.style.display = 'none';
+
+        sStage.style.position = 'relative';
+        sStage.style.left = '0';
+        sStage.style.top = '0';
+        sStage.style.width = '100%';
+        sStage.style.height = '100%';
+        sStage.style.borderRadius = '20px';
+
+        mainStage.className = "w-full flex-1 flex flex-col items-center justify-center p-2 sm:p-4 overflow-hidden relative";
+        document.getElementById('readoutMode').textContent = 'Borderless CRT (Max Screen)';
+
+        // Default curved glass OFF in Borderless CRT mode
+        const chkCurve = document.getElementById('chkCurve');
+        if (chkCurve) chkCurve.checked = false;
+        toggleCurve(false);
+      } else if (mode === 'full') {
+        btnFull.className = "px-3.5 py-1.5 rounded-md bg-green-500 text-black font-semibold shadow transition-all flex items-center gap-1.5";
+        btnBorderless.className = "px-3.5 py-1.5 rounded-md text-gray-300 hover:text-white transition-all flex items-center gap-1.5";
+
+        bImg.style.display = 'block';
+        driveLed.style.display = 'block';
+        powerLed.style.display = 'block';
+
+        sStage.style.position = 'absolute';
+        sStage.style.left = '7.46%';
+        sStage.style.top = '7.42%';
+        sStage.style.width = '84.69%';
+        sStage.style.height = '48.54%';
+        sStage.style.borderRadius = '14px';
+
+        mainStage.className = "w-full flex-1 flex flex-col items-center justify-start p-2 sm:p-4 pt-3 pb-16 overflow-y-auto relative";
+        document.getElementById('readoutMode').textContent = 'Full DVI Rig (Max Width)';
+
+        // Default curved glass ON in Full DVI Rig mode
+        const chkCurve = document.getElementById('chkCurve');
+        if (chkCurve) chkCurve.checked = true;
+        toggleCurve(true);
+      }
+
+      applySizing();
+      renderCanvas();
+    }
+
+    // --- Dynamic Sizing: Max Window Fit ---
+    function applySizing() {
+      const container = document.getElementById('bezelContainer');
+      const availH = window.innerHeight - 110;
+      const availW = window.innerWidth - 32;
+
+      if (isFitScreen) {
+        if (currentMode === 'borderless') {
+          // 4:3 Aspect Ratio maximized to viewport (both width and height fit)
+          const ratio = 4 / 3;
+          let targetH = availH;
+          let targetW = targetH * ratio;
+          if (targetW > availW) {
+            targetW = availW;
+            targetH = targetW / ratio;
+          }
+          container.style.width = Math.round(targetW) + 'px';
+          container.style.height = Math.round(targetH) + 'px';
+          container.style.aspectRatio = '4 / 3';
+          document.getElementById('zoomSlider').value = Math.round(targetW);
+          document.getElementById('zoomReadout').textContent = Math.round(targetW) + 'px';
+        } else if (currentMode === 'full') {
+          // Full DVI Rig: Auto-fit Window Max Width!
+          // Fills the left and right maximally across the window width.
+          const targetW = Math.max(360, availW - 16);
+          const targetH = Math.round(targetW * (1024 / 764));
+          container.style.width = targetW + 'px';
+          container.style.height = targetH + 'px';
+          container.style.aspectRatio = '764 / 1024';
+          document.getElementById('zoomSlider').value = targetW;
+          document.getElementById('zoomReadout').textContent = targetW + 'px';
+        }
+      } else {
+        const val = parseInt(document.getElementById('zoomSlider').value, 10);
+        container.style.width = val + 'px';
+        if (currentMode === 'borderless') {
+          container.style.height = Math.round(val * 0.75) + 'px';
+          container.style.aspectRatio = '4 / 3';
+        } else {
+          container.style.height = Math.round(val * (1024 / 764)) + 'px';
+          container.style.aspectRatio = '764 / 1024';
+        }
+      }
+
+      updateMetrics();
+    }
+
+    function toggleFitScreen(enable) {
+      isFitScreen = enable;
+      applySizing();
+    }
+
+    function updateManualSize(val) {
+      isFitScreen = false;
+      const chk = document.getElementById('chkFitScreen');
+      if (chk) chk.checked = false;
+      document.getElementById('zoomReadout').textContent = val + 'px';
+      applySizing();
+    }
+
+    function updateMetrics() {
+      const rect = document.getElementById('screenStage').getBoundingClientRect();
+      document.getElementById('readoutSize').textContent =
+        `Screen: ${Math.round(rect.width)} × ${Math.round(rect.height)} px`;
+    }
+
+    // --- Phosphor Themes ---
+    function setTheme(theme) {
+      currentTheme = theme;
+      ['green', 'amber', 'bw'].forEach(t => {
+        const btn = document.getElementById('theme' + t.charAt(0).toUpperCase() + t.slice(1));
+        if (t === theme) {
+          btn.className = `px-2.5 py-1 rounded border border-green-500 bg-green-500/20 text-green-400 text-xs font-medium transition-all flex items-center gap-1.5 shadow-[0_0_10px_rgba(34,197,94,0.2)]`;
+        } else {
+          btn.className = `px-2.5 py-1 rounded border border-gray-700 bg-gray-800 text-gray-300 text-xs font-medium hover:bg-gray-700 transition-all flex items-center gap-1.5`;
+        }
+      });
+
+      const sStage = document.getElementById('screenStage');
+      sStage.classList.remove('glow-green', 'glow-amber', 'glow-bw');
+      if (document.getElementById('chkGlow').checked) {
+        sStage.classList.add(themes[theme].class);
+      }
+      document.getElementById('readoutTheme').textContent = themes[theme].name;
+      renderCanvas();
+    }
+
+    // --- Effects Toggles ---
+    function toggleScanlines(enable) {
+      document.getElementById('scanlinesOverlay').style.display = enable ? 'block' : 'none';
+    }
+
+    function toggleGlow(enable) {
+      const sStage = document.getElementById('screenStage');
+      sStage.classList.remove('glow-green', 'glow-amber', 'glow-bw');
+      if (enable) {
+        sStage.classList.add(themes[currentTheme].class);
+      }
+      renderCanvas();
+    }
+
+    function toggleCurve(enable) {
+      document.getElementById('glassGlareOverlay').style.display = enable ? 'block' : 'none';
+      document.getElementById('innerShadowOverlay').style.display = enable ? 'block' : 'none';
+    }
+
+    // --- Simulate Floppy Disk Activity ---
+    function simulateDiskAccess() {
+      const led = document.getElementById('driveLed');
+      if (currentMode !== 'full') {
+        setViewMode('full');
+      }
+
+      let count = 0;
+      const interval = setInterval(() => {
+        led.classList.toggle('drive-led-active');
+        count++;
+        if (count > 12) {
+          clearInterval(interval);
+          led.classList.remove('drive-led-active');
+          printString("DISK 0: READ SECTOR 18 TRACK 3 OK\nOk\n");
+        }
+      }, 110);
+    }
+
+    // --- Init on Load ---
+    window.addEventListener('load', () => {
+      initBuffer();
+      loadSampleBasic();
+      setViewMode('borderless');
+      setTheme('green');
+      window.addEventListener('resize', applySizing);
+      applySizing();
+    });
+  </script>
+</body>
+</html>

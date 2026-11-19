@@ -525,52 +525,70 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      width: 1200px;
-      max-width: 95vw;
+      width: 100%;
       margin-bottom: 25px;
+      box-sizing: border-box;
     }
 
     .crt-toolbar {
       display: flex;
       flex-wrap: wrap;
-      gap: 15px;
+      gap: 10px;
       align-items: center;
       justify-content: space-between;
-      width: 896px;
-      max-width: 95vw;
-      background: #111;
-      border: 2px solid #444;
-      border-bottom: none;
-      padding: 10px 16px;
+      width: 100%;
+      max-width: 1200px;
+      background: #11161d;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 8px 14px;
       box-sizing: border-box;
-      border-top-left-radius: 8px;
-      border-top-right-radius: 8px;
+      margin-bottom: 12px;
     }
 
     .crt-toolbar-group {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       flex-wrap: wrap;
     }
 
+    .crt-mode-btn {
+      padding: 5px 12px;
+      font-size: 12px;
+      background: #21262d;
+      border: 1px solid #30363d;
+      color: #c9d1d9;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.15s ease;
+    }
+
+    .crt-mode-btn.active {
+      background: #22c55e;
+      color: #000;
+      border-color: #22c55e;
+    }
+
     .crt-theme-btn {
-      padding: 6px 12px;
-      font-size: 13px;
-      background: #222;
-      border: 1px solid #555;
-      color: #ccc;
+      padding: 4px 10px;
+      font-size: 12px;
+      background: #21262d;
+      border: 1px solid #30363d;
+      color: #8b949e;
+      border-radius: 4px;
       cursor: pointer;
       font-weight: bold;
+      transition: all 0.15s ease;
     }
 
     .crt-theme-btn.active {
-      border-color: #ffd24a;
       color: #fff;
     }
 
-    .crt-theme-btn.amber.active { background: #5a3800; color: #ffb000; border-color: #ffb000; }
     .crt-theme-btn.green.active { background: #0b3d12; color: #33ff33; border-color: #33ff33; }
+    .crt-theme-btn.amber.active { background: #5a3800; color: #ffb000; border-color: #ffb000; }
     .crt-theme-btn.bw.active    { background: #333333; color: #ffffff; border-color: #ffffff; }
 
     .crt-status-pill {
@@ -604,53 +622,57 @@
       box-shadow: 0 0 6px #33ff33;
     }
 
-    .crt-bezel {
-      position: relative;
-      background: radial-gradient(circle at center, #2e2e2e 0%, #1a1a1a 85%, #0e0e0e 100%);
-      padding: 24px;
-      border-radius: 16px;
-      box-shadow: inset 0 0 30px rgba(0,0,0,0.95), 0 10px 30px rgba(0,0,0,0.8), 0 0 0 4px #333;
-      display: inline-block;
-      margin-bottom: 12px;
+    /* CRT Glow Effects */
+    .glow-green {
+      box-shadow: inset 0 0 45px rgba(51, 255, 51, 0.28), 0 0 30px rgba(51, 255, 51, 0.38);
+    }
+    .glow-amber {
+      box-shadow: inset 0 0 45px rgba(255, 176, 0, 0.28), 0 0 30px rgba(255, 176, 0, 0.38);
+    }
+    .glow-bw {
+      box-shadow: inset 0 0 45px rgba(200, 225, 255, 0.22), 0 0 25px rgba(200, 225, 255, 0.28);
     }
 
-    .crt-screen-wrapper {
-      position: relative;
-      overflow: hidden;
-      border-radius: 8px;
-      background: #000;
-      box-shadow: inset 0 0 35px rgba(0,0,0,0.95);
-      transition: box-shadow 0.3s ease;
-    }
-
-    #dviCanvas {
-      display: block;
-      image-rendering: pixelated;
-    }
-
+    /* Scanlines Mesh Overlay */
     .crt-scanlines {
+      background: linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0) 50%,
+        rgba(0, 0, 0, 0.42) 51%
+      );
+      background-size: 100% 4px;
       pointer-events: none;
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.45) 50%),
-                  linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-      background-size: 100% 3px, 6px 100%;
-      z-index: 10;
+      z-index: 20;
     }
 
-    .crt-screen-wrapper.glow-amber {
-      box-shadow: inset 0 0 35px rgba(0,0,0,0.95), 0 0 25px rgba(255, 176, 0, 0.35);
+    /* Curved Glass Tube Highlight */
+    .crt-glass-glare {
+      background: radial-gradient(
+        circle at 50% 30%,
+        rgba(255, 255, 255, 0.08) 0%,
+        rgba(255, 255, 255, 0.02) 45%,
+        rgba(0, 0, 0, 0.35) 85%,
+        rgba(0, 0, 0, 0.72) 100%
+      );
+      pointer-events: none;
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 20;
     }
-    .crt-screen-wrapper.glow-green {
-      box-shadow: inset 0 0 35px rgba(0,0,0,0.95), 0 0 25px rgba(51, 255, 51, 0.35);
-    }
-    .crt-screen-wrapper.glow-bw {
-      box-shadow: inset 0 0 35px rgba(0,0,0,0.95), 0 0 25px rgba(240, 240, 240, 0.25);
+
+    .crt-inner-shadow {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none;
+      box-shadow: inset 0 0 24px rgba(0,0,0,0.85);
+      z-index: 20;
     }
 
     .crt-hint-box {
-      width: 896px;
-      max-width: 95vw;
+      width: 100%;
+      max-width: 1200px;
       background: #111;
       border: 1px solid #333;
       padding: 10px 16px;
@@ -810,43 +832,76 @@
 
     </div> <!-- end tabPaneFloppy -->
 
-  <!-- Tab 2: Virtual DVI (AirDVI) CRT Terminal -->
-  <div class="tab-pane" id="tabPaneDvi">
+    <!-- Tab 2: Virtual DVI (AirDVI) CRT Terminal -->
+  <div class="tab-pane" id="tabPaneDvi" style="flex-direction: column; align-items: center; width: 100%;">
     <div class="crt-container">
       <div class="crt-toolbar">
         <div class="crt-toolbar-group">
-          <span style="font-size: 13px; font-weight: bold; color: #ffd24a;">THEME:</span>
-          <button class="crt-theme-btn amber active" id="btnThemeAmber" onclick="dviTerminal.setTheme('amber')">Amber</button>
-          <button class="crt-theme-btn green" id="btnThemeGreen" onclick="dviTerminal.setTheme('green')">Green</button>
+          <!-- View Mode Selector: Borderless CRT is default & 1st option -->
+          <button class="crt-mode-btn active" id="btnModeBorderless" onclick="dviTerminal.setViewMode('borderless')">
+            ⬛ Borderless CRT
+          </button>
+          <button class="crt-mode-btn" id="btnModeFull" onclick="dviTerminal.setViewMode('full')">
+            💾 Full DVI Rig
+          </button>
+
+          <span style="font-size: 12px; font-weight: bold; color: #888; margin-left: 6px;">PHOSPHOR:</span>
+          <button class="crt-theme-btn green active" id="btnThemeGreen" onclick="dviTerminal.setTheme('green')">Green</button>
+          <button class="crt-theme-btn amber" id="btnThemeAmber" onclick="dviTerminal.setTheme('amber')">Amber</button>
           <button class="crt-theme-btn bw" id="btnThemeBw" onclick="dviTerminal.setTheme('bw')">B&W</button>
-          <label style="font-size: 13px; margin-left: 8px; display: flex; align-items: center; gap: 4px; cursor: pointer;">
-            <input type="checkbox" id="chkScanlines" checked onchange="dviTerminal.toggleScanlines(this.checked)" style="display:inline-block;"> Scanlines
-          </label>
-          <label style="font-size: 13px; margin-left: 6px; display: flex; align-items: center; gap: 4px; cursor: pointer;">
-            <input type="checkbox" id="chkGlow" checked onchange="dviTerminal.toggleGlow(this.checked)" style="display:inline-block;"> CRT Glow
-          </label>
         </div>
 
         <div class="crt-toolbar-group">
+          <label style="font-size: 12px; display: flex; align-items: center; gap: 4px; cursor: pointer; color: #ccc;">
+            <input type="checkbox" id="chkFitScreen" checked onchange="dviTerminal.toggleFitScreen(this.checked)"> Auto-Fit Window
+          </label>
+          <div style="display: flex; align-items: center; gap: 4px;">
+            <span style="font-size: 12px; color: #888;">Scale:</span>
+            <input type="range" id="zoomSlider" min="360" max="1400" value="900" style="width: 100px; height: 4px; cursor: pointer; accent-color: #22c55e;" oninput="dviTerminal.updateManualSize(this.value)">
+            <span id="zoomReadout" style="font-family: monospace; font-size: 11px; color: #22c55e; width: 45px;">900px</span>
+          </div>
+          <label style="font-size: 12px; display: flex; align-items: center; gap: 4px; cursor: pointer; color: #ccc;">
+            <input type="checkbox" id="chkScanlines" checked onchange="dviTerminal.toggleScanlines(this.checked)"> Scanlines
+          </label>
+          <label style="font-size: 12px; display: flex; align-items: center; gap: 4px; cursor: pointer; color: #ccc;">
+            <input type="checkbox" id="chkGlow" checked onchange="dviTerminal.toggleGlow(this.checked)"> Glow
+          </label>
+          <label style="font-size: 12px; display: flex; align-items: center; gap: 4px; cursor: pointer; color: #ccc;">
+            <input type="checkbox" id="chkCurve" onchange="dviTerminal.toggleCurve(this.checked)"> Curved Glass
+          </label>
+
           <div class="crt-status-pill" id="dviStatusPill">
             <span class="crt-status-dot"></span>
             <span id="dviStatusText">DVI: Standby</span>
           </div>
-          <button onclick="dviTerminal.clearScreen()" style="font-size: 12px; padding: 6px 10px;">Clear</button>
-          <button onclick="dviTerminal.copyText()" style="font-size: 12px; padding: 6px 10px;">Copy Text</button>
-          <button onclick="dviTerminal.downloadSnapshot()" style="font-size: 12px; padding: 6px 10px;">Snapshot (.PNG)</button>
-          <button onclick="toggleCrtFullscreen()" style="font-size: 12px; padding: 6px 10px;">Fullscreen</button>
+          <button onclick="dviTerminal.clearScreen()" style="font-size: 12px; padding: 4px 8px;">Clear</button>
+          <button onclick="dviTerminal.copyText()" style="font-size: 12px; padding: 4px 8px;">Copy</button>
+          <button onclick="dviTerminal.downloadSnapshot()" style="font-size: 12px; padding: 4px 8px;">Snapshot</button>
+          <button onclick="toggleCrtFullscreen()" style="font-size: 12px; padding: 4px 8px;">Fullscreen</button>
         </div>
       </div>
 
-      <div class="crt-bezel" id="crtBezel">
-        <div class="crt-screen-wrapper glow-amber" id="crtScreenWrapper">
-          <canvas id="dviCanvas" width="800" height="432"></canvas>
-          <div class="crt-scanlines" id="crtScanlines"></div>
+      <!-- Stage Area Container for CRT Bezel / Screen -->
+      <div id="dviStageWrapper" style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+        <div id="bezelContainer" style="position: relative; margin: 0 auto; transition: all 0.2s ease-out; user-select: none; display: flex; align-items: center; justify-content: center;">
+
+          <!-- INNER CRT SCREEN STAGE -->
+          <div id="crtScreenWrapper" class="glow-green" style="position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease-out; border-radius: 20px; width: 100%; height: 100%;">
+            <canvas id="dviCanvas" width="1600" height="1200" style="width: 100%; height: 100%; display: block; background: #000a02;"></canvas>
+            <div class="crt-scanlines" id="crtScanlines"></div>
+            <div class="crt-glass-glare" id="crtGlassGlare" style="display: none;"></div>
+            <div class="crt-inner-shadow" id="crtInnerShadow" style="display: none;"></div>
+          </div>
+
+          <!-- OVERLAID BEZEL GRAPHIC (Tandy CRT Monitor & DVI Base Unit, defringed with smooth anti-aliased edges) -->
+          <img id="bezelGraphic"
+               src="tandy_dvi_bezel_full.png"
+               alt="Tandy CRT Monitor & DVI Bezel"
+               style="display: none; position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 30; filter: drop-shadow(0 15px 35px rgba(0,0,0,0.85));">
         </div>
       </div>
 
-      <div class="crt-hint-box">
+      <div class="crt-hint-box" style="margin-top: 15px;">
         <strong>AirDVI 80-Column Mode:</strong> From the Model 100/102 <code>AIRDRV.BA</code> menu, select <code>3: Virtual DVI</code>.
         <br>Or from BASIC prompt: <code>SCREEN 1</code> redirects video to this CRT screen. Press <code>[F8]</code> or <code>[Break]</code> on Model 100 to exit back to menu.
       </div>
@@ -943,7 +998,10 @@
         document.getElementById("tabPaneDvi").classList.add("active");
         document.getElementById("dviBadge").classList.remove("visible");
         document.getElementById("btnRefresh").style.display = "none";
-        if (dviTerminal) dviTerminal.requestRender();
+        if (dviTerminal) {
+          dviTerminal.applySizing();
+          dviTerminal.requestRender();
+        }
       } else if (tabName === "help") {
         document.getElementById("tabBtnHelp").classList.add("active");
         document.getElementById("tabPaneHelp").classList.add("active");
@@ -952,10 +1010,10 @@
     }
 
     function toggleCrtFullscreen() {
-      const bezel = document.getElementById("crtBezel");
+      const stage = document.getElementById("bezelContainer");
       if (!document.fullscreenElement) {
-        if (bezel.requestFullscreen) bezel.requestFullscreen();
-        else if (bezel.webkitRequestFullscreen) bezel.webkitRequestFullscreen();
+        if (stage.requestFullscreen) stage.requestFullscreen();
+        else if (stage.webkitRequestFullscreen) stage.webkitRequestFullscreen();
       } else {
         if (document.exitFullscreen) document.exitFullscreen();
       }
@@ -968,21 +1026,20 @@
         this.ctx = canvas.getContext("2d");
         this.cols = 80;
         this.rows = 24;
-        this.charW = 10;
-        this.charH = 18;
-        this.dpr = window.devicePixelRatio || 1;
 
         this.curRow = 0; // 0..23
         this.curCol = 0; // 0..79
         this.cursorVisible = true;
         this.cursorBlink = true;
         this.inverse = false;
-        this.theme = "amber";
+        this.theme = "green"; // Green by default
+        this.currentMode = "borderless"; // Borderless CRT by default
+        this.isFitScreen = true;
 
         this.themes = {
-          amber: { bg: "#181102", fg: "#ffb000", bright: "#ffd24a", dim: "#754b00", cur: "#ffb000" },
-          green: { bg: "#021406", fg: "#33ff33", bright: "#66ff66", dim: "#116611", cur: "#33ff33" },
-          bw:    { bg: "#111111", fg: "#e0e0e0", bright: "#ffffff", dim: "#777777", cur: "#e0e0e0" }
+          green: { bg: "#000c02", fg: "#33ff33", bright: "#66ff66", dim: "#116611", cur: "#33ff33" },
+          amber: { bg: "#0c0800", fg: "#ffb000", bright: "#ffd24a", dim: "#754b00", cur: "#ffb000" },
+          bw:    { bg: "#05070a", fg: "#f0f6fc", bright: "#ffffff", dim: "#777777", cur: "#f0f6fc" }
         };
 
         this.buffer = [];
@@ -1012,13 +1069,134 @@
       }
 
       setupHiDpi() {
-        const w = this.cols * this.charW;
-        const h = this.rows * this.charH;
-        this.canvas.width = Math.round(w * this.dpr);
-        this.canvas.height = Math.round(h * this.dpr);
-        this.canvas.style.width = w + "px";
-        this.canvas.style.height = h + "px";
-        this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+        this.canvas.width = 1600;
+        this.canvas.height = 1200;
+        this.canvas.style.width = "100%";
+        this.canvas.style.height = "100%";
+        this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+      }
+
+      setViewMode(mode) {
+        this.currentMode = mode;
+        const bImg = document.getElementById("bezelGraphic");
+        const sStage = document.getElementById("crtScreenWrapper");
+        const stageWrap = document.getElementById("dviStageWrapper");
+
+        const btnBorderless = document.getElementById("btnModeBorderless");
+        const btnFull = document.getElementById("btnModeFull");
+
+        if (mode === "borderless") {
+          if (btnBorderless) btnBorderless.className = "crt-mode-btn active";
+          if (btnFull) btnFull.className = "crt-mode-btn";
+
+          if (bImg) bImg.style.display = "none";
+
+          if (sStage) {
+            sStage.style.position = "relative";
+            sStage.style.left = "0";
+            sStage.style.top = "0";
+            sStage.style.width = "100%";
+            sStage.style.height = "100%";
+            sStage.style.borderRadius = "20px";
+          }
+          if (stageWrap) {
+            stageWrap.style.overflow = "hidden";
+            stageWrap.style.justifyContent = "center";
+          }
+
+          // Default curved glass OFF in Borderless CRT
+          const chkCurve = document.getElementById("chkCurve");
+          if (chkCurve) chkCurve.checked = false;
+          this.toggleCurve(false);
+        } else if (mode === "full") {
+          if (btnFull) btnFull.className = "crt-mode-btn active";
+          if (btnBorderless) btnBorderless.className = "crt-mode-btn";
+
+          if (bImg) bImg.style.display = "block";
+
+          if (sStage) {
+            sStage.style.position = "absolute";
+            sStage.style.left = "7.46%";
+            sStage.style.top = "7.42%";
+            sStage.style.width = "84.69%";
+            sStage.style.height = "48.54%";
+            sStage.style.borderRadius = "14px";
+          }
+          if (stageWrap) {
+            stageWrap.style.overflow = "visible";
+            stageWrap.style.justifyContent = "flex-start";
+          }
+
+          // Default curved glass ON in Full DVI Rig
+          const chkCurve = document.getElementById("chkCurve");
+          if (chkCurve) chkCurve.checked = true;
+          this.toggleCurve(true);
+        }
+
+        this.applySizing();
+        this.requestRender();
+      }
+
+      applySizing() {
+        const container = document.getElementById("bezelContainer");
+        if (!container) return;
+        const availH = window.innerHeight - 180;
+        const availW = Math.min(window.innerWidth - 40, 1400);
+
+        if (this.isFitScreen) {
+          if (this.currentMode === "borderless") {
+            const ratio = 4 / 3;
+            let targetH = availH;
+            let targetW = targetH * ratio;
+            if (targetW > availW) {
+              targetW = availW;
+              targetH = targetW / ratio;
+            }
+            container.style.width = Math.round(targetW) + "px";
+            container.style.height = Math.round(targetH) + "px";
+            container.style.aspectRatio = "4 / 3";
+            const slider = document.getElementById("zoomSlider");
+            const readout = document.getElementById("zoomReadout");
+            if (slider) slider.value = Math.round(targetW);
+            if (readout) readout.textContent = Math.round(targetW) + "px";
+          } else if (this.currentMode === "full") {
+            // Full DVI Rig: auto-fit to Window Max Width
+            const targetW = Math.max(360, availW);
+            const targetH = Math.round(targetW * (1024 / 764));
+            container.style.width = targetW + "px";
+            container.style.height = targetH + "px";
+            container.style.aspectRatio = "764 / 1024";
+            const slider = document.getElementById("zoomSlider");
+            const readout = document.getElementById("zoomReadout");
+            if (slider) slider.value = targetW;
+            if (readout) readout.textContent = targetW + "px";
+          }
+        } else {
+          const slider = document.getElementById("zoomSlider");
+          const val = slider ? parseInt(slider.value, 10) : 900;
+          container.style.width = val + "px";
+          if (this.currentMode === "borderless") {
+            container.style.height = Math.round(val * 0.75) + "px";
+            container.style.aspectRatio = "4 / 3";
+          } else {
+            container.style.height = Math.round(val * (1024 / 764)) + "px";
+            container.style.aspectRatio = "764 / 1024";
+          }
+        }
+      }
+
+      toggleFitScreen(enable) {
+        this.isFitScreen = enable;
+        this.applySizing();
+      }
+
+      updateManualSize(val) {
+        this.isFitScreen = false;
+        const chk = document.getElementById("chkFitScreen");
+        if (chk) chk.checked = false;
+        const readout = document.getElementById("zoomReadout");
+        if (readout) readout.textContent = val + "px";
+        this.applySizing();
       }
 
       setTheme(name) {
@@ -1049,6 +1227,13 @@
         if (!wrap) return;
         wrap.classList.remove("glow-amber", "glow-green", "glow-bw");
         if (enable) wrap.classList.add("glow-" + this.theme);
+      }
+
+      toggleCurve(enable) {
+        const glare = document.getElementById("crtGlassGlare");
+        const shadow = document.getElementById("crtInnerShadow");
+        if (glare) glare.style.display = enable ? "block" : "none";
+        if (shadow) shadow.style.display = enable ? "block" : "none";
       }
 
       clearScreen() {
@@ -1110,36 +1295,39 @@
         this.requestRender();
       }
 
-      lineFeed() {
-        if (this.curRow < this.rows - 1) {
-          this.curRow++;
-        } else {
-          this.buffer.shift();
-          const newRow = [];
-          for (let c = 0; c < this.cols; c++) newRow.push({ code: 32, inv: false });
-          this.buffer.push(newRow);
-        }
+      scrollUp() {
+        this.buffer.shift();
+        const newRow = [];
+        for (let c = 0; c < this.cols; c++) newRow.push({ code: 32, inv: false });
+        this.buffer.push(newRow);
+        this.curRow = this.rows - 1;
         this.requestRender();
       }
 
-      setChar(r, c, code, inv) {
-        if (r < 0 || r >= this.rows || c < 0 || c >= this.cols) return;
-        this.buffer[r][c].code = code;
-        this.buffer[r][c].inv = inv;
+      scrollDown() {
+        this.buffer.pop();
+        const newRow = [];
+        for (let c = 0; c < this.cols; c++) newRow.push({ code: 32, inv: false });
+        this.buffer.unshift(newRow);
+        this.curRow = 0;
+        this.requestRender();
       }
 
-      playBell() {
+      bell() {
         try {
           if (!this.audioCtx) {
-            this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            this.audioCtx = new AudioContext();
           }
-          if (this.audioCtx.state === "suspended") this.audioCtx.resume();
+          if (this.audioCtx.state === "suspended") {
+            this.audioCtx.resume();
+          }
           const osc = this.audioCtx.createOscillator();
           const gain = this.audioCtx.createGain();
           osc.type = "square";
           osc.frequency.setValueAtTime(800, this.audioCtx.currentTime);
-          gain.gain.setValueAtTime(0.12, this.audioCtx.currentTime);
-          gain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + 0.12);
+          gain.gain.setValueAtTime(0.15, this.audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + 0.12);
           osc.connect(gain);
           gain.connect(this.audioCtx.destination);
           osc.start();
@@ -1155,125 +1343,157 @@
       }
 
       feedByte(b) {
-        if (this.escState === 0) {
-          if (b === 0x1B) { this.escState = 1; return; }
-          if (b === 0x07) { this.playBell(); return; }
-          if (b === 0x08) { if (this.curCol > 0) this.curCol--; return; }
-          if (b === 0x09) { this.curCol = Math.min(this.cols - 1, (Math.floor(this.curCol / 8) + 1) * 8); return; }
-          if (b === 0x0A) { this.lineFeed(); return; }
-          if (b === 0x0B) { if (this.curRow > 0) this.curRow--; return; }
-          if (b === 0x0C) { this.clearScreen(); this.curRow = 0; this.curCol = 0; return; }
-          if (b === 0x0D) { this.curCol = 0; return; }
-          if (b === 0x1C) { if (this.curCol < this.cols - 1) this.curCol++; return; }
-          if (b === 0x1D) { if (this.curCol > 0) this.curCol--; return; }
-          if (b === 0x1E) { if (this.curRow > 0) this.curRow--; return; }
-          if (b === 0x1F) { this.lineFeed(); return; }
-
-          if (b >= 0x20) {
-            this.setChar(this.curRow, this.curCol, b, this.inverse);
-            this.curCol++;
-            if (this.curCol >= this.cols) {
-              this.curCol = 0;
-              this.lineFeed();
-            }
+        if (this.escState === 1) {
+          if (b === 0x59 || b === 0x79) { // 'Y'
+            this.escState = 2;
+            return;
           }
-          return;
-        }
-
-        if (this.escState === 1) { // Got ESC
-          if (b === 0x59 || b === 0x3D) { this.escState = 2; return; } // 'Y' or '='
-          if (b === 0x5B) { this.escState = 4; this.csiBuf = ""; return; } // '['
+          this.handleEscCode(b);
           this.escState = 0;
-          switch (b) {
-            case 0x48: this.curRow = 0; this.curCol = 0; break; // 'H' Home
-            case 0x45: this.clearScreen(); this.curRow = 0; this.curCol = 0; break; // 'E' Clear & Home
-            case 0x6A: this.clearScreen(); break; // 'j' Clear
-            case 0x4A: this.eraseToEOS(); break; // 'J' Erase EOS
-            case 0x4B: this.eraseToEOL(); break; // 'K' Erase EOL
-            case 0x6C: this.eraseLine(this.curRow); this.curCol = 0; break; // 'l' Erase Line
-            case 0x4C: this.insertLine(this.curRow); break; // 'L' Insert Line
-            case 0x4D: this.deleteLine(this.curRow); break; // 'M' Delete Line
-            case 0x50: this.cursorVisible = true; break; // 'P' Cursor On
-            case 0x51: this.cursorVisible = false; break; // 'Q' Cursor Off
-            case 0x70: this.inverse = true; break; // 'p' Inverse On
-            case 0x71: this.inverse = false; break; // 'q' Inverse Off
-            case 0x41: if (this.curRow > 0) this.curRow--; break; // 'A' Up
-            case 0x42: if (this.curRow < this.rows - 1) this.curRow++; break; // 'B' Down
-            case 0x43: if (this.curCol < this.cols - 1) this.curCol++; break; // 'C' Right
-            case 0x44: if (this.curCol > 0) this.curCol--; break; // 'D' Left
-          }
           return;
-        }
-
-        if (this.escState === 2) { // ESC Y wait row
+        } else if (this.escState === 2) {
           this.escRow = Math.max(0, Math.min(this.rows - 1, b - 32));
           this.escState = 3;
           return;
-        }
-
-        if (this.escState === 3) { // ESC Y wait col
-          let col = Math.max(0, Math.min(this.cols - 1, b - 32));
+        } else if (this.escState === 3) {
+          const col = Math.max(0, Math.min(this.cols - 1, b - 32));
           this.curRow = this.escRow;
           this.curCol = col;
           this.escState = 0;
+          this.requestRender();
           return;
-        }
-
-        if (this.escState === 4) { // ANSI CSI
-          if (b >= 0x30 && b <= 0x3F) {
+        } else if (this.escState === 4) {
+          if ((b >= 0x40 && b <= 0x7E)) {
+            this.handleCsi(b, this.csiBuf);
+            this.escState = 0;
+            return;
+          } else {
             this.csiBuf += String.fromCharCode(b);
+            if (this.csiBuf.length > 32) this.escState = 0;
             return;
           }
-          this.escState = 0;
-          this.handleCsi(String.fromCharCode(b), this.csiBuf);
-          return;
         }
+
+        // Normal state
+        if (b === 0x1B) { // ESC
+          this.escState = 1;
+        } else if (b === 0x07) { // BEL
+          this.bell();
+        } else if (b === 0x08) { // BS
+          if (this.curCol > 0) this.curCol--;
+          this.requestRender();
+        } else if (b === 0x09) { // TAB
+          this.curCol = Math.min(this.cols - 1, (Math.floor(this.curCol / 8) + 1) * 8);
+          this.requestRender();
+        } else if (b === 0x0A) { // LF
+          if (this.curRow < this.rows - 1) {
+            this.curRow++;
+          } else {
+            this.scrollUp();
+          }
+          this.requestRender();
+        } else if (b === 0x0C) { // FF / CLS
+          this.clearScreen();
+          this.curRow = 0;
+          this.curCol = 0;
+          this.requestRender();
+        } else if (b === 0x0D) { // CR
+          this.curCol = 0;
+          this.requestRender();
+        } else if (b === 0x0B) { // VT - cursor home
+          this.curRow = 0;
+          this.curCol = 0;
+          this.requestRender();
+        } else if (b >= 32) {
+          if (this.curRow < this.rows && this.curCol < this.cols) {
+            this.buffer[this.curRow][this.curCol].code = b;
+            this.buffer[this.curRow][this.curCol].inv = this.inverse;
+          }
+          this.curCol++;
+          if (this.curCol >= this.cols) {
+            this.curCol = 0;
+            if (this.curRow < this.rows - 1) {
+              this.curRow++;
+            } else {
+              this.scrollUp();
+            }
+          }
+          this.requestRender();
+        }
+      }
+
+      handleEscCode(b) {
+        if (b === 0x45 || b === 0x65) { // 'E' - Clear screen & home
+          this.clearScreen();
+          this.curRow = 0;
+          this.curCol = 0;
+        } else if (b === 0x48 || b === 0x68) { // 'H' - Cursor home
+          this.curRow = 0;
+          this.curCol = 0;
+        } else if (b === 0x41 || b === 0x61) { // 'A' - Cursor up
+          if (this.curRow > 0) this.curRow--;
+        } else if (b === 0x42 || b === 0x62) { // 'B' - Cursor down
+          if (this.curRow < this.rows - 1) this.curRow++;
+        } else if (b === 0x43 || b === 0x63) { // 'C' - Cursor right
+          if (this.curCol < this.cols - 1) this.curCol++;
+        } else if (b === 0x44 || b === 0x64) { // 'D' - Cursor left
+          if (this.curCol > 0) this.curCol--;
+        } else if (b === 0x4A || b === 0x6A) { // 'J' - Erase to end of screen
+          this.eraseToEOS();
+        } else if (b === 0x4B || b === 0x6B) { // 'K' - Erase to end of line
+          this.eraseToEOL();
+        } else if (b === 0x4C || b === 0x6C) { // 'L' - Insert line
+          this.insertLine(this.curRow);
+        } else if (b === 0x4D || b === 0x6D) { // 'M' - Delete line
+          this.deleteLine(this.curRow);
+        } else if (b === 0x70) { // 'p' - Reverse video ON
+          this.inverse = true;
+        } else if (b === 0x71) { // 'q' - Reverse video OFF
+          this.inverse = false;
+        } else if (b === 0x5B) { // '[' - CSI
+          this.escState = 4;
+          this.csiBuf = "";
+        }
+        this.requestRender();
       }
 
       handleCsi(cmd, params) {
         const parts = params.split(";").map(p => parseInt(p, 10));
-        switch (cmd) {
-          case "H":
-          case "f": {
-            const r = isNaN(parts[0]) ? 1 : parts[0];
-            const c = isNaN(parts[1]) ? 1 : parts[1];
-            this.curRow = Math.max(0, Math.min(this.rows - 1, r - 1));
-            this.curCol = Math.max(0, Math.min(this.cols - 1, c - 1));
-            break;
+        const p1 = (parts.length > 0 && !isNaN(parts[0])) ? parts[0] : 1;
+        const p2 = (parts.length > 1 && !isNaN(parts[1])) ? parts[1] : 1;
+
+        if (cmd === 0x48 || cmd === 0x66) { // 'H' or 'f' - Cursor Position (row, col)
+          this.curRow = Math.max(0, Math.min(this.rows - 1, p1 - 1));
+          this.curCol = Math.max(0, Math.min(this.cols - 1, p2 - 1));
+        } else if (cmd === 0x41) { // 'A' - Up
+          this.curRow = Math.max(0, this.curRow - p1);
+        } else if (cmd === 0x42) { // 'B' - Down
+          this.curRow = Math.min(this.rows - 1, this.curRow + p1);
+        } else if (cmd === 0x43) { // 'C' - Forward (Right)
+          this.curCol = Math.min(this.cols - 1, this.curCol + p1);
+        } else if (cmd === 0x44) { // 'D' - Back (Left)
+          this.curCol = Math.max(0, this.curCol - p1);
+        } else if (cmd === 0x4A) { // 'J' - Erase in display
+          if (p1 === 2) this.clearScreen();
+          else if (p1 === 0) this.eraseToEOS();
+        } else if (cmd === 0x4B) { // 'K' - Erase in line
+          if (p1 === 0) this.eraseToEOL();
+          else if (p1 === 2) this.eraseLine(this.curRow);
+        } else if (cmd === 0x6D) { // 'm' - SGR
+          for (let code of parts) {
+            if (isNaN(code) || code === 0) this.inverse = false;
+            else if (code === 7) this.inverse = true;
+            else if (code === 27) this.inverse = false;
           }
-          case "J": {
-            const m = isNaN(parts[0]) ? 0 : parts[0];
-            if (m === 2) { this.clearScreen(); this.curRow = 0; this.curCol = 0; }
-            else if (m === 0) { this.eraseToEOS(); }
-            break;
-          }
-          case "K": {
-            const m = isNaN(parts[0]) ? 0 : parts[0];
-            if (m === 2) { this.eraseLine(this.curRow); }
-            else if (m === 0) { this.eraseToEOL(); }
-            break;
-          }
-          case "m": {
-            if (params === "7") this.inverse = true;
-            else if (params === "0" || params === "27" || params === "") this.inverse = false;
-            break;
-          }
-          case "h": { if (params === "?25") this.cursorVisible = true; break; }
-          case "l": { if (params === "?25") this.cursorVisible = false; break; }
-          case "A": { const n = isNaN(parts[0]) ? 1 : parts[0]; this.curRow = Math.max(0, this.curRow - n); break; }
-          case "B": { const n = isNaN(parts[0]) ? 1 : parts[0]; this.curRow = Math.min(this.rows - 1, this.curRow + n); break; }
-          case "C": { const n = isNaN(parts[0]) ? 1 : parts[0]; this.curCol = Math.min(this.cols - 1, this.curCol + n); break; }
-          case "D": { const n = isNaN(parts[0]) ? 1 : parts[0]; this.curCol = Math.max(0, this.curCol - n); break; }
-          case "L": { const n = isNaN(parts[0]) ? 1 : parts[0]; for(let i=0; i<n; i++) this.insertLine(this.curRow); break; }
-          case "M": { const n = isNaN(parts[0]) ? 1 : parts[0]; for(let i=0; i<n; i++) this.deleteLine(this.curRow); break; }
         }
+        this.requestRender();
       }
 
       startBlinkLoop() {
         setInterval(() => {
           this.cursorBlink = !this.cursorBlink;
-          if (this.cursorVisible) this.requestRender();
-        }, 500);
+          this.requestRender();
+        }, 530);
       }
 
       startRenderLoop() {
@@ -1294,20 +1514,39 @@
       render() {
         const th = this.themes[this.theme];
         const ctx = this.ctx;
-        const cw = this.charW;
-        const ch = this.charH;
+        const w = this.canvas.width;
+        const h = this.canvas.height;
 
         // Clear background
         ctx.fillStyle = th.bg;
-        ctx.fillRect(0, 0, this.cols * cw, this.rows * ch);
+        ctx.fillRect(0, 0, w, h);
 
-        ctx.font = "14px \"Courier New\", Consolas, Monaco, monospace";
+        // Safe insets so characters never get clipped by the curved glass corners
+        let padLeft, padRight, padTop, padBottom;
+        if (this.currentMode === "full") {
+          padLeft = w * 0.055;
+          padRight = w * 0.055;
+          padTop = h * 0.065;
+          padBottom = h * 0.065;
+        } else {
+          padLeft = w * 0.03;
+          padRight = w * 0.03;
+          padTop = h * 0.04;
+          padBottom = h * 0.04;
+        }
+
+        const usableW = w - padLeft - padRight;
+        const usableH = h - padTop - padBottom;
+        const cw = usableW / this.cols;
+        const ch = usableH / this.rows;
+
+        ctx.font = `bold ${Math.round(ch * 0.82)}px "Courier New", Consolas, Monaco, monospace`;
         ctx.textBaseline = "top";
 
         for (let r = 0; r < this.rows; r++) {
-          const y = r * ch;
+          const y = padTop + r * ch;
           for (let c = 0; c < this.cols; c++) {
-            const x = c * cw;
+            const x = padLeft + c * cw;
             const cell = this.buffer[r][c];
             const code = cell.code;
             const inv = cell.inv;
@@ -1333,20 +1572,20 @@
               if (mask & 32) ctx.fillRect(x + halfW, y + 2 * thirdH, halfW, thirdH);
             } else if (code > 32 && code <= 126) {
               ctx.fillStyle = fg;
-              ctx.fillText(String.fromCharCode(code), x + 1, y + 1);
+              ctx.fillText(String.fromCharCode(code), x + (cw * 0.1), y + (ch * 0.08));
             } else if (code > 191) {
               ctx.fillStyle = fg;
-              ctx.fillText(String.fromCharCode(code), x + 1, y + 1);
+              ctx.fillText(String.fromCharCode(code), x + (cw * 0.1), y + (ch * 0.08));
             }
           }
         }
 
         // Draw cursor
-        if (this.cursorVisible && this.cursorBlink) {
-          const cx = this.curCol * cw;
-          const cy = this.curRow * ch;
+        if (this.cursorVisible && this.cursorBlink && this.curRow < this.rows && this.curCol < this.cols) {
+          const cx = padLeft + this.curCol * cw;
+          const cy = padTop + this.curRow * ch;
           ctx.fillStyle = th.cur;
-          ctx.fillRect(cx, cy + ch - 3, cw, 3);
+          ctx.fillRect(cx, cy + (ch * 0.8), cw * 0.85, ch * 0.18);
         }
       }
 
@@ -2550,6 +2789,11 @@
       const cvs = document.getElementById("dviCanvas");
       if (cvs) {
         dviTerminal = new DviTerminal(cvs);
+        dviTerminal.setViewMode("borderless");
+        dviTerminal.setTheme("green");
+        window.addEventListener("resize", () => {
+          if (dviTerminal) dviTerminal.applySizing();
+        });
       }
     });
 
