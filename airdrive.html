@@ -1755,6 +1755,11 @@
     // --- BLE Connection ---
     btnConnect.onclick = async () => {
       try {
+        if (!navigator.bluetooth) {
+          alert('Web Bluetooth is not available in this context.\n\nNote: Chrome blocks Web Bluetooth on "file://" URLs.\nTo test locally, run:\n  python3 -m http.server 8000\nand open http://localhost:8000/airdrive.html\nAlso check macOS System Settings -> Privacy & Security -> Bluetooth -> Google Chrome.');
+          return;
+        }
+
         console.log('Requesting Bluetooth Device...');
 
         let devices = [];
@@ -1770,7 +1775,12 @@
           console.log('Found previously paired device:', bleDevice.name);
         } else {
           bleDevice = await navigator.bluetooth.requestDevice({
-            filters: [{ services: [SERVICE_UUID] }]
+            filters: [
+              { services: [SERVICE_UUID] },
+              { namePrefix: 'Model T' },
+              { name: 'Model T AirDrive' }
+            ],
+            optionalServices: [SERVICE_UUID]
           });
         }
 
