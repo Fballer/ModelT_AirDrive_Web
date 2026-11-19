@@ -445,7 +445,283 @@
     .credit a {
       color: #87b9ff;
     }
-  </style>
+
+    /* --- Main 3-Tab Navigation Bar --- */
+    .tab-bar {
+      display: flex;
+      gap: 12px;
+      margin-top: 15px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #444;
+      width: 1200px;
+      max-width: 95vw;
+      justify-content: flex-start;
+    }
+
+    .tab-btn {
+      background-color: #1a1a1a;
+      color: #9ea78d;
+      border: 2px solid #444;
+      border-bottom: none;
+      padding: 10px 22px;
+      font-family: monospace;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .tab-btn:hover {
+      background-color: #2b2b2b;
+      color: #fff;
+    }
+
+    .tab-btn.active {
+      background-color: #2a4d87;
+      color: #ffffff;
+      border-color: #9ea78d;
+    }
+
+    .tab-badge {
+      display: none;
+      background: #ffb000;
+      color: #000;
+      border-radius: 10px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+      animation: pulseBadge 1.2s infinite;
+    }
+
+    .tab-badge.visible {
+      display: inline-block;
+    }
+
+    @keyframes pulseBadge {
+      0% { opacity: 0.7; transform: scale(0.95); }
+      50% { opacity: 1; transform: scale(1.05); }
+      100% { opacity: 0.7; transform: scale(0.95); }
+    }
+
+    .tab-pane {
+      display: none;
+      width: 100%;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .tab-pane.active {
+      display: flex;
+    }
+
+    /* --- Virtual DVI / CRT Terminal Styles --- */
+    .crt-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 1200px;
+      max-width: 95vw;
+      margin-bottom: 25px;
+    }
+
+    .crt-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      align-items: center;
+      justify-content: space-between;
+      width: 896px;
+      max-width: 95vw;
+      background: #111;
+      border: 2px solid #444;
+      border-bottom: none;
+      padding: 10px 16px;
+      box-sizing: border-box;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+    }
+
+    .crt-toolbar-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .crt-theme-btn {
+      padding: 6px 12px;
+      font-size: 13px;
+      background: #222;
+      border: 1px solid #555;
+      color: #ccc;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .crt-theme-btn.active {
+      border-color: #ffd24a;
+      color: #fff;
+    }
+
+    .crt-theme-btn.amber.active { background: #5a3800; color: #ffb000; border-color: #ffb000; }
+    .crt-theme-btn.green.active { background: #0b3d12; color: #33ff33; border-color: #33ff33; }
+    .crt-theme-btn.bw.active    { background: #333333; color: #ffffff; border-color: #ffffff; }
+
+    .crt-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+      background: #222;
+      border: 1px solid #444;
+      color: #888;
+    }
+
+    .crt-status-pill.active {
+      background: #1a331a;
+      border-color: #33ff33;
+      color: #33ff33;
+    }
+
+    .crt-status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #666;
+    }
+
+    .crt-status-pill.active .crt-status-dot {
+      background: #33ff33;
+      box-shadow: 0 0 6px #33ff33;
+    }
+
+    .crt-bezel {
+      position: relative;
+      background: radial-gradient(circle at center, #2e2e2e 0%, #1a1a1a 85%, #0e0e0e 100%);
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: inset 0 0 30px rgba(0,0,0,0.95), 0 10px 30px rgba(0,0,0,0.8), 0 0 0 4px #333;
+      display: inline-block;
+      margin-bottom: 12px;
+    }
+
+    .crt-screen-wrapper {
+      position: relative;
+      overflow: hidden;
+      border-radius: 8px;
+      background: #000;
+      box-shadow: inset 0 0 35px rgba(0,0,0,0.95);
+      transition: box-shadow 0.3s ease;
+    }
+
+    #dviCanvas {
+      display: block;
+      image-rendering: pixelated;
+    }
+
+    .crt-scanlines {
+      pointer-events: none;
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.45) 50%),
+                  linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+      background-size: 100% 3px, 6px 100%;
+      z-index: 10;
+    }
+
+    .crt-screen-wrapper.glow-amber {
+      box-shadow: inset 0 0 35px rgba(0,0,0,0.95), 0 0 25px rgba(255, 176, 0, 0.35);
+    }
+    .crt-screen-wrapper.glow-green {
+      box-shadow: inset 0 0 35px rgba(0,0,0,0.95), 0 0 25px rgba(51, 255, 51, 0.35);
+    }
+    .crt-screen-wrapper.glow-bw {
+      box-shadow: inset 0 0 35px rgba(0,0,0,0.95), 0 0 25px rgba(240, 240, 240, 0.25);
+    }
+
+    .crt-hint-box {
+      width: 896px;
+      max-width: 95vw;
+      background: #111;
+      border: 1px solid #333;
+      padding: 10px 16px;
+      color: #aaa;
+      font-size: 13px;
+      box-sizing: border-box;
+      border-radius: 6px;
+      line-height: 1.4;
+      text-align: center;
+    }
+
+    /* --- Tab 3: Help / Reference Styles --- */
+    .help-container {
+      width: 1000px;
+      max-width: 95vw;
+      background: #181818;
+      border: 2px solid #444;
+      border-radius: 8px;
+      padding: 30px;
+      box-sizing: border-box;
+      margin-top: 10px;
+      margin-bottom: 30px;
+      color: #d7dcc8;
+    }
+
+    .help-container h2 {
+      color: #ffd24a;
+      border-bottom: 2px solid #333;
+      padding-bottom: 8px;
+      margin-top: 0;
+    }
+
+    .help-container h3 {
+      color: #87b9ff;
+      margin-top: 24px;
+      margin-bottom: 8px;
+    }
+
+    .help-container p, .help-container li {
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .help-container code {
+      background: #252525;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #33ff33;
+      font-size: 13px;
+    }
+
+    .help-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      margin-bottom: 20px;
+      font-size: 13px;
+    }
+
+    .help-table th, .help-table td {
+      border: 1px solid #333;
+      padding: 8px 12px;
+      text-align: left;
+    }
+
+    .help-table th {
+      background: #222;
+      color: #ffd24a;
+    }
+
+  </style>e>
 </head>
 
 <body>
@@ -464,7 +740,22 @@
     <button id="btnOta" class="quiet" type="button" onclick="location.href='https://www.portacoco.com/airdrive_ota.html'">Check for updates</button>
   </div>
 
-  <div class="main-area">
+  
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tabBtnFloppy" onclick="switchTab('floppy')">
+      💾 Virtual Floppy (TPDD)
+    </button>
+    <button class="tab-btn" id="tabBtnDvi" onclick="switchTab('dvi')">
+      📺 Virtual DVI (AirDVI)
+      <span class="tab-badge" id="dviBadge">STREAMING</span>
+    </button>
+    <button class="tab-btn" id="tabBtnHelp" onclick="switchTab('help')">
+      ❓ Help & Reference
+    </button>
+  </div>
+
+  <div class="tab-pane active" id="tabPaneFloppy">
+<div class="main-area">
     <div class="floppy-stack" id="stack">
       <!-- Generated dynamically in JS -->
     </div>
@@ -517,6 +808,98 @@
     </div>
   </div>
 
+    </div> <!-- end tabPaneFloppy -->
+
+  <!-- Tab 2: Virtual DVI (AirDVI) CRT Terminal -->
+  <div class="tab-pane" id="tabPaneDvi">
+    <div class="crt-container">
+      <div class="crt-toolbar">
+        <div class="crt-toolbar-group">
+          <span style="font-size: 13px; font-weight: bold; color: #ffd24a;">THEME:</span>
+          <button class="crt-theme-btn amber active" id="btnThemeAmber" onclick="dviTerminal.setTheme('amber')">Amber</button>
+          <button class="crt-theme-btn green" id="btnThemeGreen" onclick="dviTerminal.setTheme('green')">Green</button>
+          <button class="crt-theme-btn bw" id="btnThemeBw" onclick="dviTerminal.setTheme('bw')">B&W</button>
+          <label style="font-size: 13px; margin-left: 8px; display: flex; align-items: center; gap: 4px; cursor: pointer;">
+            <input type="checkbox" id="chkScanlines" checked onchange="dviTerminal.toggleScanlines(this.checked)" style="display:inline-block;"> Scanlines
+          </label>
+          <label style="font-size: 13px; margin-left: 6px; display: flex; align-items: center; gap: 4px; cursor: pointer;">
+            <input type="checkbox" id="chkGlow" checked onchange="dviTerminal.toggleGlow(this.checked)" style="display:inline-block;"> CRT Glow
+          </label>
+        </div>
+
+        <div class="crt-toolbar-group">
+          <div class="crt-status-pill" id="dviStatusPill">
+            <span class="crt-status-dot"></span>
+            <span id="dviStatusText">DVI: Standby</span>
+          </div>
+          <button onclick="dviTerminal.clearScreen()" style="font-size: 12px; padding: 6px 10px;">Clear</button>
+          <button onclick="dviTerminal.copyText()" style="font-size: 12px; padding: 6px 10px;">Copy Text</button>
+          <button onclick="dviTerminal.downloadSnapshot()" style="font-size: 12px; padding: 6px 10px;">Snapshot (.PNG)</button>
+          <button onclick="toggleCrtFullscreen()" style="font-size: 12px; padding: 6px 10px;">Fullscreen</button>
+        </div>
+      </div>
+
+      <div class="crt-bezel" id="crtBezel">
+        <div class="crt-screen-wrapper glow-amber" id="crtScreenWrapper">
+          <canvas id="dviCanvas" width="800" height="432"></canvas>
+          <div class="crt-scanlines" id="crtScanlines"></div>
+        </div>
+      </div>
+
+      <div class="crt-hint-box">
+        <strong>AirDVI 80-Column Mode:</strong> From the Model 100/102 <code>AIRDRV.BA</code> menu, select <code>3: Virtual DVI</code>.
+        <br>Or from BASIC prompt: <code>SCREEN 1</code> redirects video to this CRT screen. Press <code>[F8]</code> or <code>[Break]</code> on Model 100 to exit back to menu.
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 3: Help & Reference -->
+  <div class="tab-pane" id="tabPaneHelp">
+    <div class="help-container">
+      <h2>Porta MT: AirDrive Quick Reference & Guide</h2>
+
+      <h3>1. Initial Bootstrap & Installation</h3>
+      <p>To load the AirDrive software suite on a freshly wiped or new TRS-80 Model 100 / Model 102:</p>
+      <ol>
+        <li>Turn ON Model 100 and ensure the AirDrive is connected to the RS-232 DB-25 port.</li>
+        <li>From the Model 100 main menu, press <code>Enter</code> on <code>BASIC</code>.</li>
+        <li>Type <code>RUN "COM:98N1E"</code> and press <code>Enter</code>.</li>
+        <li>Within 15 seconds, press and hold the button on the AirDrive for <strong>under 2 seconds</strong>.</li>
+        <li>The system will automatically install <code>TSLOAD.CO</code> and create the <code>AIRDRV.BA</code> system menu.</li>
+      </ol>
+
+      <h3>2. The AIRDRV.BA System Menu</h3>
+      <p>Running <code>AIRDRV.BA</code> from the Model 100 menu provides instant access to all AirDrive capabilities:</p>
+      <ul>
+        <li><code>1: BT-Keyboard</code> — Use the Model 100 keyboard wirelessly with your modern PC, Mac, iPad, or phone.</li>
+        <li><code>2: TS-DOS (Floppy)</code> — Launch Traveling Software TS-DOS for full floppy disk operations across 5 virtual drives.</li>
+        <li><code>3: Virtual DVI</code> — Activate high-speed wireless 80-column external CRT display on Tab 2 of this browser app!</li>
+        <li><code>4: PAKU-100</code> — Maze arcade game (Pac-Man clone).</li>
+        <li><code>5: Block-TRS</code> — Falling blocks puzzle game (Tetris clone).</li>
+        <li><code>6: Pipe-100</code> — Fast-paced plumbing puzzle game (Pipe Dream clone).</li>
+        <li><code>7: Mine-100</code> — Strategy mine sweeper game.</li>
+        <li><code>Q: Quit</code> — Return cleanly to the TRS-80 Model 100 main menu.</li>
+      </ul>
+
+      <h3>3. AirDVI Video Control Commands (in BASIC)</h3>
+      <table class="help-table">
+        <tr><th>Command</th><th>Effect</th></tr>
+        <tr><td><code>SCREEN 1</code></td><td>Redirect video output to the wireless 80-column Virtual DVI CRT.</td></tr>
+        <tr><td><code>SCREEN 0</code></td><td>Restore video output to the built-in 40×8 LCD.</td></tr>
+        <tr><td><code>WIDTH 80</code></td><td>Select 80-column CRT mode (80×24 text grid).</td></tr>
+        <tr><td><code>WIDTH 40</code></td><td>Select 40-column CRT mode (40×24 text grid).</td></tr>
+        <tr><td><code>CLS</code></td><td>Clear screen and return cursor to Home (row 1, col 1).</td></tr>
+        <tr><td><code>PRINT@ &lt;pos&gt;, "text"</code></td><td>Print directly at linear CRT cell (0 to 1919 in WIDTH 80).</td></tr>
+      </table>
+
+      <h3>4. Firmware Updates (OTA)</h3>
+      <p>The Porta MT: AirDrive firmware can be updated wirelessly using Web Bluetooth or via USB-C mass storage drag-and-drop.</p>
+      <div style="margin-top: 15px;">
+        <button onclick="location.href='https://www.portacoco.com/airdrive_ota.html'" style="background-color: #2a4d87; color: #fff;">Open AirDrive Firmware OTA Updater</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal disk select -->
   <div id="diskSelectModal"
     style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); width:300px; background:#111; border:3px solid #87b9ff; padding:20px; z-index:9999; text-align:center;">
@@ -543,10 +926,466 @@
 
   <script src="m100-basic.js"></script>
   <script>
+    
+    // --- 3-Tab UI Controller ---
+    let currentTab = "floppy";
+    function switchTab(tabName) {
+      currentTab = tabName;
+      document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+      document.querySelectorAll(".tab-pane").forEach(pane => pane.classList.remove("active"));
+
+      if (tabName === "floppy") {
+        document.getElementById("tabBtnFloppy").classList.add("active");
+        document.getElementById("tabPaneFloppy").classList.add("active");
+        document.getElementById("btnRefresh").style.display = "";
+      } else if (tabName === "dvi") {
+        document.getElementById("tabBtnDvi").classList.add("active");
+        document.getElementById("tabPaneDvi").classList.add("active");
+        document.getElementById("dviBadge").classList.remove("visible");
+        document.getElementById("btnRefresh").style.display = "none";
+        if (dviTerminal) dviTerminal.requestRender();
+      } else if (tabName === "help") {
+        document.getElementById("tabBtnHelp").classList.add("active");
+        document.getElementById("tabPaneHelp").classList.add("active");
+        document.getElementById("btnRefresh").style.display = "none";
+      }
+    }
+
+    function toggleCrtFullscreen() {
+      const bezel = document.getElementById("crtBezel");
+      if (!document.fullscreenElement) {
+        if (bezel.requestFullscreen) bezel.requestFullscreen();
+        else if (bezel.webkitRequestFullscreen) bezel.webkitRequestFullscreen();
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen();
+      }
+    }
+
+    // --- Virtual DVI CRT Terminal Engine ---
+    class DviTerminal {
+      constructor(canvas) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext("2d");
+        this.cols = 80;
+        this.rows = 24;
+        this.charW = 10;
+        this.charH = 18;
+        this.dpr = window.devicePixelRatio || 1;
+
+        this.curRow = 0; // 0..23
+        this.curCol = 0; // 0..79
+        this.cursorVisible = true;
+        this.cursorBlink = true;
+        this.inverse = false;
+        this.theme = "amber";
+
+        this.themes = {
+          amber: { bg: "#181102", fg: "#ffb000", bright: "#ffd24a", dim: "#754b00", cur: "#ffb000" },
+          green: { bg: "#021406", fg: "#33ff33", bright: "#66ff66", dim: "#116611", cur: "#33ff33" },
+          bw:    { bg: "#111111", fg: "#e0e0e0", bright: "#ffffff", dim: "#777777", cur: "#e0e0e0" }
+        };
+
+        this.buffer = [];
+        this.initBuffer();
+
+        this.escState = 0; // 0=normal, 1=ESC, 2=ESC Y wait row, 3=ESC Y wait col, 4=ESC [ (CSI)
+        this.escRow = 0;
+        this.csiBuf = "";
+
+        this.audioCtx = null;
+        this.needRender = true;
+
+        this.setupHiDpi();
+        this.startBlinkLoop();
+        this.startRenderLoop();
+      }
+
+      initBuffer() {
+        this.buffer = [];
+        for (let r = 0; r < this.rows; r++) {
+          const row = [];
+          for (let c = 0; c < this.cols; c++) {
+            row.push({ code: 32, inv: false });
+          }
+          this.buffer.push(row);
+        }
+      }
+
+      setupHiDpi() {
+        const w = this.cols * this.charW;
+        const h = this.rows * this.charH;
+        this.canvas.width = Math.round(w * this.dpr);
+        this.canvas.height = Math.round(h * this.dpr);
+        this.canvas.style.width = w + "px";
+        this.canvas.style.height = h + "px";
+        this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+      }
+
+      setTheme(name) {
+        if (!this.themes[name]) return;
+        this.theme = name;
+        document.querySelectorAll(".crt-theme-btn").forEach(b => b.classList.remove("active"));
+        const btn = document.getElementById("btnTheme" + name.charAt(0).toUpperCase() + name.slice(1));
+        if (btn) btn.classList.add("active");
+
+        const wrap = document.getElementById("crtScreenWrapper");
+        if (wrap) {
+          wrap.classList.remove("glow-amber", "glow-green", "glow-bw");
+          const chkGlow = document.getElementById("chkGlow");
+          if (!chkGlow || chkGlow.checked) {
+            wrap.classList.add("glow-" + name);
+          }
+        }
+        this.requestRender();
+      }
+
+      toggleScanlines(enable) {
+        const sc = document.getElementById("crtScanlines");
+        if (sc) sc.style.display = enable ? "block" : "none";
+      }
+
+      toggleGlow(enable) {
+        const wrap = document.getElementById("crtScreenWrapper");
+        if (!wrap) return;
+        wrap.classList.remove("glow-amber", "glow-green", "glow-bw");
+        if (enable) wrap.classList.add("glow-" + this.theme);
+      }
+
+      clearScreen() {
+        for (let r = 0; r < this.rows; r++) {
+          for (let c = 0; c < this.cols; c++) {
+            this.buffer[r][c].code = 32;
+            this.buffer[r][c].inv = false;
+          }
+        }
+        this.requestRender();
+      }
+
+      eraseToEOS() {
+        for (let c = this.curCol; c < this.cols; c++) {
+          this.buffer[this.curRow][c].code = 32;
+          this.buffer[this.curRow][c].inv = false;
+        }
+        for (let r = this.curRow + 1; r < this.rows; r++) {
+          for (let c = 0; c < this.cols; c++) {
+            this.buffer[r][c].code = 32;
+            this.buffer[r][c].inv = false;
+          }
+        }
+        this.requestRender();
+      }
+
+      eraseToEOL() {
+        for (let c = this.curCol; c < this.cols; c++) {
+          this.buffer[this.curRow][c].code = 32;
+          this.buffer[this.curRow][c].inv = false;
+        }
+        this.requestRender();
+      }
+
+      eraseLine(row) {
+        if (row < 0 || row >= this.rows) return;
+        for (let c = 0; c < this.cols; c++) {
+          this.buffer[row][c].code = 32;
+          this.buffer[row][c].inv = false;
+        }
+        this.requestRender();
+      }
+
+      insertLine(row) {
+        if (row < 0 || row >= this.rows) return;
+        this.buffer.pop();
+        const newRow = [];
+        for (let c = 0; c < this.cols; c++) newRow.push({ code: 32, inv: false });
+        this.buffer.splice(row, 0, newRow);
+        this.requestRender();
+      }
+
+      deleteLine(row) {
+        if (row < 0 || row >= this.rows) return;
+        this.buffer.splice(row, 1);
+        const newRow = [];
+        for (let c = 0; c < this.cols; c++) newRow.push({ code: 32, inv: false });
+        this.buffer.push(newRow);
+        this.requestRender();
+      }
+
+      lineFeed() {
+        if (this.curRow < this.rows - 1) {
+          this.curRow++;
+        } else {
+          this.buffer.shift();
+          const newRow = [];
+          for (let c = 0; c < this.cols; c++) newRow.push({ code: 32, inv: false });
+          this.buffer.push(newRow);
+        }
+        this.requestRender();
+      }
+
+      setChar(r, c, code, inv) {
+        if (r < 0 || r >= this.rows || c < 0 || c >= this.cols) return;
+        this.buffer[r][c].code = code;
+        this.buffer[r][c].inv = inv;
+      }
+
+      playBell() {
+        try {
+          if (!this.audioCtx) {
+            this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          }
+          if (this.audioCtx.state === "suspended") this.audioCtx.resume();
+          const osc = this.audioCtx.createOscillator();
+          const gain = this.audioCtx.createGain();
+          osc.type = "square";
+          osc.frequency.setValueAtTime(800, this.audioCtx.currentTime);
+          gain.gain.setValueAtTime(0.12, this.audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + 0.12);
+          osc.connect(gain);
+          gain.connect(this.audioCtx.destination);
+          osc.start();
+          osc.stop(this.audioCtx.currentTime + 0.12);
+        } catch (e) {}
+      }
+
+      feed(bytes) {
+        for (let i = 0; i < bytes.length; i++) {
+          this.feedByte(bytes[i]);
+        }
+        this.requestRender();
+      }
+
+      feedByte(b) {
+        if (this.escState === 0) {
+          if (b === 0x1B) { this.escState = 1; return; }
+          if (b === 0x07) { this.playBell(); return; }
+          if (b === 0x08) { if (this.curCol > 0) this.curCol--; return; }
+          if (b === 0x09) { this.curCol = Math.min(this.cols - 1, (Math.floor(this.curCol / 8) + 1) * 8); return; }
+          if (b === 0x0A) { this.lineFeed(); return; }
+          if (b === 0x0B) { if (this.curRow > 0) this.curRow--; return; }
+          if (b === 0x0C) { this.clearScreen(); this.curRow = 0; this.curCol = 0; return; }
+          if (b === 0x0D) { this.curCol = 0; return; }
+          if (b === 0x1C) { if (this.curCol < this.cols - 1) this.curCol++; return; }
+          if (b === 0x1D) { if (this.curCol > 0) this.curCol--; return; }
+          if (b === 0x1E) { if (this.curRow > 0) this.curRow--; return; }
+          if (b === 0x1F) { this.lineFeed(); return; }
+
+          if (b >= 0x20) {
+            this.setChar(this.curRow, this.curCol, b, this.inverse);
+            this.curCol++;
+            if (this.curCol >= this.cols) {
+              this.curCol = 0;
+              this.lineFeed();
+            }
+          }
+          return;
+        }
+
+        if (this.escState === 1) { // Got ESC
+          if (b === 0x59 || b === 0x3D) { this.escState = 2; return; } // 'Y' or '='
+          if (b === 0x5B) { this.escState = 4; this.csiBuf = ""; return; } // '['
+          this.escState = 0;
+          switch (b) {
+            case 0x48: this.curRow = 0; this.curCol = 0; break; // 'H' Home
+            case 0x45: this.clearScreen(); this.curRow = 0; this.curCol = 0; break; // 'E' Clear & Home
+            case 0x6A: this.clearScreen(); break; // 'j' Clear
+            case 0x4A: this.eraseToEOS(); break; // 'J' Erase EOS
+            case 0x4B: this.eraseToEOL(); break; // 'K' Erase EOL
+            case 0x6C: this.eraseLine(this.curRow); this.curCol = 0; break; // 'l' Erase Line
+            case 0x4C: this.insertLine(this.curRow); break; // 'L' Insert Line
+            case 0x4D: this.deleteLine(this.curRow); break; // 'M' Delete Line
+            case 0x50: this.cursorVisible = true; break; // 'P' Cursor On
+            case 0x51: this.cursorVisible = false; break; // 'Q' Cursor Off
+            case 0x70: this.inverse = true; break; // 'p' Inverse On
+            case 0x71: this.inverse = false; break; // 'q' Inverse Off
+            case 0x41: if (this.curRow > 0) this.curRow--; break; // 'A' Up
+            case 0x42: if (this.curRow < this.rows - 1) this.curRow++; break; // 'B' Down
+            case 0x43: if (this.curCol < this.cols - 1) this.curCol++; break; // 'C' Right
+            case 0x44: if (this.curCol > 0) this.curCol--; break; // 'D' Left
+          }
+          return;
+        }
+
+        if (this.escState === 2) { // ESC Y wait row
+          this.escRow = Math.max(0, Math.min(this.rows - 1, b - 32));
+          this.escState = 3;
+          return;
+        }
+
+        if (this.escState === 3) { // ESC Y wait col
+          let col = Math.max(0, Math.min(this.cols - 1, b - 32));
+          this.curRow = this.escRow;
+          this.curCol = col;
+          this.escState = 0;
+          return;
+        }
+
+        if (this.escState === 4) { // ANSI CSI
+          if (b >= 0x30 && b <= 0x3F) {
+            this.csiBuf += String.fromCharCode(b);
+            return;
+          }
+          this.escState = 0;
+          this.handleCsi(String.fromCharCode(b), this.csiBuf);
+          return;
+        }
+      }
+
+      handleCsi(cmd, params) {
+        const parts = params.split(";").map(p => parseInt(p, 10));
+        switch (cmd) {
+          case "H":
+          case "f": {
+            const r = isNaN(parts[0]) ? 1 : parts[0];
+            const c = isNaN(parts[1]) ? 1 : parts[1];
+            this.curRow = Math.max(0, Math.min(this.rows - 1, r - 1));
+            this.curCol = Math.max(0, Math.min(this.cols - 1, c - 1));
+            break;
+          }
+          case "J": {
+            const m = isNaN(parts[0]) ? 0 : parts[0];
+            if (m === 2) { this.clearScreen(); this.curRow = 0; this.curCol = 0; }
+            else if (m === 0) { this.eraseToEOS(); }
+            break;
+          }
+          case "K": {
+            const m = isNaN(parts[0]) ? 0 : parts[0];
+            if (m === 2) { this.eraseLine(this.curRow); }
+            else if (m === 0) { this.eraseToEOL(); }
+            break;
+          }
+          case "m": {
+            if (params === "7") this.inverse = true;
+            else if (params === "0" || params === "27" || params === "") this.inverse = false;
+            break;
+          }
+          case "h": { if (params === "?25") this.cursorVisible = true; break; }
+          case "l": { if (params === "?25") this.cursorVisible = false; break; }
+          case "A": { const n = isNaN(parts[0]) ? 1 : parts[0]; this.curRow = Math.max(0, this.curRow - n); break; }
+          case "B": { const n = isNaN(parts[0]) ? 1 : parts[0]; this.curRow = Math.min(this.rows - 1, this.curRow + n); break; }
+          case "C": { const n = isNaN(parts[0]) ? 1 : parts[0]; this.curCol = Math.min(this.cols - 1, this.curCol + n); break; }
+          case "D": { const n = isNaN(parts[0]) ? 1 : parts[0]; this.curCol = Math.max(0, this.curCol - n); break; }
+          case "L": { const n = isNaN(parts[0]) ? 1 : parts[0]; for(let i=0; i<n; i++) this.insertLine(this.curRow); break; }
+          case "M": { const n = isNaN(parts[0]) ? 1 : parts[0]; for(let i=0; i<n; i++) this.deleteLine(this.curRow); break; }
+        }
+      }
+
+      startBlinkLoop() {
+        setInterval(() => {
+          this.cursorBlink = !this.cursorBlink;
+          if (this.cursorVisible) this.requestRender();
+        }, 500);
+      }
+
+      startRenderLoop() {
+        const loop = () => {
+          if (this.needRender) {
+            this.needRender = false;
+            this.render();
+          }
+          requestAnimationFrame(loop);
+        };
+        requestAnimationFrame(loop);
+      }
+
+      requestRender() {
+        this.needRender = true;
+      }
+
+      render() {
+        const th = this.themes[this.theme];
+        const ctx = this.ctx;
+        const cw = this.charW;
+        const ch = this.charH;
+
+        // Clear background
+        ctx.fillStyle = th.bg;
+        ctx.fillRect(0, 0, this.cols * cw, this.rows * ch);
+
+        ctx.font = "14px \"Courier New\", Consolas, Monaco, monospace";
+        ctx.textBaseline = "top";
+
+        for (let r = 0; r < this.rows; r++) {
+          const y = r * ch;
+          for (let c = 0; c < this.cols; c++) {
+            const x = c * cw;
+            const cell = this.buffer[r][c];
+            const code = cell.code;
+            const inv = cell.inv;
+            const fg = inv ? th.bg : th.fg;
+            const bg = inv ? th.fg : th.bg;
+
+            if (inv) {
+              ctx.fillStyle = bg;
+              ctx.fillRect(x, y, cw, ch);
+            }
+
+            // Model 100 2x3 block semigraphics: 128..191
+            if (code >= 128 && code <= 191) {
+              const mask = code - 128;
+              ctx.fillStyle = fg;
+              const halfW = cw / 2;
+              const thirdH = ch / 3;
+              if (mask & 1)  ctx.fillRect(x, y, halfW, thirdH);
+              if (mask & 2)  ctx.fillRect(x + halfW, y, halfW, thirdH);
+              if (mask & 4)  ctx.fillRect(x, y + thirdH, halfW, thirdH);
+              if (mask & 8)  ctx.fillRect(x + halfW, y + thirdH, halfW, thirdH);
+              if (mask & 16) ctx.fillRect(x, y + 2 * thirdH, halfW, thirdH);
+              if (mask & 32) ctx.fillRect(x + halfW, y + 2 * thirdH, halfW, thirdH);
+            } else if (code > 32 && code <= 126) {
+              ctx.fillStyle = fg;
+              ctx.fillText(String.fromCharCode(code), x + 1, y + 1);
+            } else if (code > 191) {
+              ctx.fillStyle = fg;
+              ctx.fillText(String.fromCharCode(code), x + 1, y + 1);
+            }
+          }
+        }
+
+        // Draw cursor
+        if (this.cursorVisible && this.cursorBlink) {
+          const cx = this.curCol * cw;
+          const cy = this.curRow * ch;
+          ctx.fillStyle = th.cur;
+          ctx.fillRect(cx, cy + ch - 3, cw, 3);
+        }
+      }
+
+      copyText() {
+        const lines = [];
+        for (let r = 0; r < this.rows; r++) {
+          let line = "";
+          for (let c = 0; c < this.cols; c++) {
+            const code = this.buffer[r][c].code;
+            line += (code >= 32 && code <= 126) ? String.fromCharCode(code) : " ";
+          }
+          lines.push(line.replace(/\s+$/, ""));
+        }
+        const text = lines.join("\n");
+        navigator.clipboard.writeText(text).then(() => {
+          alert("80x24 CRT text buffer copied to clipboard!");
+        }).catch(err => {
+          alert("Could not copy to clipboard: " + err);
+        });
+      }
+
+      downloadSnapshot() {
+        const link = document.createElement("a");
+        link.download = `AirDVI_Snapshot_${Date.now()}.png`;
+        link.href = this.canvas.toDataURL("image/png");
+        link.click();
+      }
+    }
+
     // --- BLE Setup ---
     const SERVICE_UUID = "19b10000-e8f2-537e-4f6c-d104768a1214";
     const CHAR_WRITE_UUID = "19b10001-e8f2-537e-4f6c-d104768a1214";
     const CHAR_NOTIFY_UUID = "19b10002-e8f2-537e-4f6c-d104768a1214";
+    const CHAR_DVI_NOTIFY_UUID = "19b10003-e8f2-537e-4f6c-d104768a1214";
+
+    let dviNotifyChar = null;
+    let dviTerminal = null;
+    let dviByteCount = 0;
+    let dviLastByteTime = 0;
 
     let bleDevice = null;
     let bleServer = null;
@@ -711,6 +1550,15 @@
         await notifyChar.startNotifications();
         notifyChar.addEventListener('characteristicvaluechanged', handleNotifications);
 
+        try {
+          dviNotifyChar = await service.getCharacteristic(CHAR_DVI_NOTIFY_UUID);
+          await dviNotifyChar.startNotifications();
+          dviNotifyChar.addEventListener('characteristicvaluechanged', handleDviNotifications);
+          console.log('AirDVI CRT stream characteristic subscribed!');
+        } catch (e) {
+          console.log('AirDVI stream characteristic not available on this device:', e);
+        }
+
         btnConnect.innerText = 'Connected';
         btnConnect.disabled = true;
         btnRefresh.disabled = false;
@@ -734,6 +1582,8 @@
       diskControls.style.display = 'none';
       writeChar = null;
       notifyChar = null;
+      dviNotifyChar = null;
+      updateDviStatus(false);
       isDownloading = false;
       downloadBuffer = null;
       if (pendingList) {
@@ -1651,6 +2501,55 @@
         alert('Could not save text: ' + (err && err.message ? err.message : err));
       } finally {
         hideXfer();
+      }
+    });
+
+  
+    function updateDviStatus(active) {
+      const pill = document.getElementById("dviStatusPill");
+      const txt = document.getElementById("dviStatusText");
+      if (!pill || !txt) return;
+      if (active) {
+        pill.classList.add("active");
+        txt.textContent = `DVI: Streaming (${dviByteCount} bytes)`;
+      } else {
+        pill.classList.remove("active");
+        txt.textContent = "DVI: Standby";
+      }
+    }
+
+    let dviActivityTimeout = null;
+    function handleDviNotifications(event) {
+      const value = event.target.value;
+      const len = value.byteLength;
+      if (len === 0) return;
+
+      dviByteCount += len;
+      dviLastByteTime = Date.now();
+      updateDviStatus(true);
+
+      if (dviActivityTimeout) clearTimeout(dviActivityTimeout);
+      dviActivityTimeout = setTimeout(() => {
+        updateDviStatus(false);
+      }, 3000);
+
+      const bytes = new Uint8Array(value.buffer, value.byteOffset, len);
+      if (dviTerminal) {
+        dviTerminal.feed(bytes);
+      }
+
+      // If user is currently on another tab, show the badge on Tab 2
+      if (currentTab !== "dvi") {
+        const badge = document.getElementById("dviBadge");
+        if (badge) badge.classList.add("visible");
+      }
+    }
+
+    // Initialize DviTerminal when DOM is loaded
+    window.addEventListener("DOMContentLoaded", () => {
+      const cvs = document.getElementById("dviCanvas");
+      if (cvs) {
+        dviTerminal = new DviTerminal(cvs);
       }
     });
 
