@@ -929,10 +929,10 @@
         <li><code>1: BT-Keyboard</code> — Use the Model 100 keyboard wirelessly with your modern PC, Mac, iPad, or phone.</li>
         <li><code>2: TS-DOS (Floppy)</code> — Launch Traveling Software TS-DOS for full floppy disk operations across 5 virtual drives.</li>
         <li><code>3: Virtual DVI</code> — Activate high-speed wireless 80-column external CRT display on Tab 2 of this browser app!</li>
-        <li><code>4: PAKU-100</code> — Chomping maze arcade game.</li>
-        <li><code>5: Block-TRS</code> — Falling block puzzle game.</li>
-        <li><code>6: Pipe-100</code> — Plumbing puzzle game, inspired by Pipe Dream.</li>
-        <li><code>7: Mine-100</code> — Strategy puzzle game, inspired by Minesweeper.</li>
+        <li><code>4: PAKU-100</code> — Chomping maze game.</li>
+        <li><code>5: Block-TRS</code> — Falling block puzzle.</li>
+        <li><code>6: Pipe-100</code> — Inspired by Pipe Dream.</li>
+        <li><code>7: Mine-100</code> — Inspired by Minesweeper.</li>
         <li><code>Q: Quit</code> — Return cleanly to the TRS-80 Model 100 main menu.</li>
       </ul>
 
@@ -1344,8 +1344,12 @@
 
       feedByte(b) {
         if (this.escState === 1) {
-          if (b === 0x59 || b === 0x79) { // 'Y'
+          if (b === 0x59 || b === 0x79) { // 'Y' - cursor positioning (ESC Y row col)
             this.escState = 2;
+            return;
+          } else if (b === 0x5B) { // '[' - CSI sequence (ESC [ ...)
+            this.escState = 4;
+            this.csiBuf = "";
             return;
           }
           this.handleEscCode(b);
@@ -1363,13 +1367,19 @@
           this.requestRender();
           return;
         } else if (this.escState === 4) {
-          if ((b >= 0x40 && b <= 0x7E)) {
+          if (b >= 0x40 && b <= 0x7E) { // Final character: executes CSI command
             this.handleCsi(b, this.csiBuf);
             this.escState = 0;
             return;
-          } else {
+          } else if (b >= 0x20 && b <= 0x3F) { // Parameters and intermediates: 0-9, ;, ?, etc.
             this.csiBuf += String.fromCharCode(b);
-            if (this.csiBuf.length > 32) this.escState = 0;
+            if (this.csiBuf.length > 64) this.escState = 0; // Guard against runaways
+            return;
+          } else if (b === 0x1B) { // Interrupted by new ESC
+            this.escState = 1;
+            return;
+          } else {
+            // Drop control bytes inside CSI sequence
             return;
           }
         }
@@ -1442,6 +1452,8 @@
           this.eraseToEOS();
         } else if (b === 0x4B || b === 0x6B) { // 'K' - Erase to end of line
           this.eraseToEOL();
+        } else if (b === 0x49) { // 'I' - Erase line
+          this.eraseLine(this.curRow);
         } else if (b === 0x4C || b === 0x6C) { // 'L' - Insert line
           this.insertLine(this.curRow);
         } else if (b === 0x4D || b === 0x6D) { // 'M' - Delete line
@@ -1450,14 +1462,29 @@
           this.inverse = true;
         } else if (b === 0x71) { // 'q' - Reverse video OFF
           this.inverse = false;
-        } else if (b === 0x5B) { // '[' - CSI
-          this.escState = 4;
-          this.csiBuf = "";
+        } else if (b === 0x50) { // 'P' - Cursor ON (Model 100 native)
+          this.cursorVisible = true;
+        } else if (b === 0x51) { // 'Q' - Cursor OFF (Model 100 native)
+          this.cursorVisible = false;
         }
         this.requestRender();
       }
 
       handleCsi(cmd, params) {
+        // DEC Private Mode sequences (e.g. ESC [ ? 25 h / ESC [ ? 25 l)
+        if (params.startsWith("?")) {
+          const decCode = parseInt(params.substring(1), 10);
+          if (decCode === 25) {
+            if (cmd === 0x68) { // 'h' - DECSET: Show Cursor
+              this.cursorVisible = true;
+            } else if (cmd === 0x6C) { // 'l' - DECRST: Hide Cursor
+              this.cursorVisible = false;
+            }
+          }
+          this.requestRender();
+          return;
+        }
+
         const parts = params.split(";").map(p => parseInt(p, 10));
         const p1 = (parts.length > 0 && !isNaN(parts[0])) ? parts[0] : 1;
         const p2 = (parts.length > 1 && !isNaN(parts[1])) ? parts[1] : 1;
@@ -1474,13 +1501,20 @@
         } else if (cmd === 0x44) { // 'D' - Back (Left)
           this.curCol = Math.max(0, this.curCol - p1);
         } else if (cmd === 0x4A) { // 'J' - Erase in display
-          if (p1 === 2) this.clearScreen();
-          else if (p1 === 0) this.eraseToEOS();
+          const jCode = (parts.length > 0 && !isNaN(parts[0])) ? parts[0] : 0;
+          if (jCode === 2) this.clearScreen();
+          else if (jCode === 0) this.eraseToEOS();
         } else if (cmd === 0x4B) { // 'K' - Erase in line
-          if (p1 === 0) this.eraseToEOL();
-          else if (p1 === 2) this.eraseLine(this.curRow);
+          const kCode = (parts.length > 0 && !isNaN(parts[0])) ? parts[0] : 0;
+          if (kCode === 0) this.eraseToEOL();
+          else if (kCode === 2) this.eraseLine(this.curRow);
+        } else if (cmd === 0x4C) { // 'L' - Insert blank line
+          for (let i = 0; i < p1; i++) this.insertLine(this.curRow);
+        } else if (cmd === 0x4D) { // 'M' - Delete line
+          for (let i = 0; i < p1; i++) this.deleteLine(this.curRow);
         } else if (cmd === 0x6D) { // 'm' - SGR
-          for (let code of parts) {
+          const sgrCodes = (params && parts.length > 0) ? parts : [0];
+          for (let code of sgrCodes) {
             if (isNaN(code) || code === 0) this.inverse = false;
             else if (code === 7) this.inverse = true;
             else if (code === 27) this.inverse = false;
