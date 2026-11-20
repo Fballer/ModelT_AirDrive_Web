@@ -4,6 +4,12 @@
 <head>
   <meta charset="UTF-8">
   <title>Porta MT: AirDrive Web BLE</title>
+  <script>
+    // Configuration object: Set enableFirmwareUpdates to false in self-hosted offline packages
+    window.APP_CONFIG = window.APP_CONFIG || {
+      enableFirmwareUpdates: true
+    };
+  </script>
   <style>
     body {
       background-color: #222222;
@@ -743,7 +749,232 @@
       color: #ffd24a;
     }
 
-  </style>e>
+    /* --- Web / BBS Internet Bridge Styles --- */
+    .net-container {
+      width: 100%;
+      max-width: 1200px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 30px;
+      box-sizing: border-box;
+    }
+
+    .net-header-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      background: #11161d;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 12px 18px;
+      box-sizing: border-box;
+    }
+
+    .net-status-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .net-pill {
+      font-size: 13px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      background: #21262d;
+      color: #c9d1d9;
+      border: 1px solid #30363d;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .net-pill.active {
+      border-color: #238636;
+      color: #3fb950;
+      background: #0d2818;
+      font-weight: bold;
+    }
+
+    .net-btn-group {
+      display: inline-flex;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid #30363d;
+    }
+
+    .net-toggle-btn {
+      background: #21262d;
+      color: #c9d1d9;
+      border: none;
+      padding: 6px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .net-toggle-btn.active {
+      background: #238636;
+      color: #ffffff;
+      font-weight: bold;
+    }
+
+    .net-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 16px;
+      width: 100%;
+    }
+
+    .net-card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-sizing: border-box;
+    }
+
+    .net-card-title {
+      font-size: 15px;
+      font-weight: bold;
+      color: #ffd24a;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #30363d;
+      padding-bottom: 8px;
+      margin: 0;
+    }
+
+    .net-card-body {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      font-size: 13px;
+      color: #c9d1d9;
+    }
+
+    .net-input-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .net-input {
+      flex: 1;
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      color: #f0f6fc;
+      padding: 8px 12px;
+      font-family: monospace;
+      font-size: 13px;
+      box-sizing: border-box;
+    }
+
+    .net-input:focus {
+      outline: none;
+      border-color: #58a6ff;
+    }
+
+    .net-action-btn {
+      background: #2a4d87;
+      color: #ffffff;
+      border: 1px solid #3867b3;
+      border-radius: 6px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .net-action-btn:hover {
+      background: #3867b3;
+      border-color: #58a6ff;
+    }
+
+    .net-action-btn.green {
+      background: #238636;
+      border-color: #2ea043;
+    }
+
+    .net-action-btn.green:hover {
+      background: #2ea043;
+    }
+
+    .net-action-btn.danger {
+      background: #da3633;
+      border-color: #f85149;
+    }
+
+    .net-action-btn.danger:hover {
+      background: #b62324;
+    }
+
+    .net-bbs-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: #0d1117;
+      border: 1px solid #21262d;
+      border-radius: 6px;
+      gap: 10px;
+    }
+
+    .net-bbs-item .info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .net-bbs-item .name {
+      font-weight: 600;
+      color: #58a6ff;
+      font-size: 13px;
+    }
+
+    .net-bbs-item .addr {
+      font-family: monospace;
+      font-size: 11px;
+      color: #8b949e;
+    }
+
+    .net-bbs-item .desc {
+      font-size: 11px;
+      color: #8b949e;
+    }
+
+    .net-log-box {
+      width: 100%;
+      height: 140px;
+      background: #000000;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 10px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 12px;
+      color: #39ff14;
+      overflow-y: auto;
+      box-sizing: border-box;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+  </style>
 </head>
 
 <body>
@@ -771,8 +1002,12 @@
       📺 Virtual DVI (AirDVI)
       <span class="tab-badge" id="dviBadge">STREAMING</span>
     </button>
+    <button class="tab-btn" id="tabBtnNet" onclick="switchTab('net')">
+      🌐 Web / BBS (Internet Bridge)
+      <span class="tab-badge" id="netBadge">ONLINE</span>
+    </button>
     <button class="tab-btn" id="tabBtnHelp" onclick="switchTab('help')">
-      ❓ Help & Reference
+      ❓ Help & Firmware Update
     </button>
   </div>
 
@@ -908,32 +1143,169 @@
     </div>
   </div>
 
-  <!-- Tab 3: Help & Reference -->
+  <!-- Tab 3: Web / BBS (Internet Bridge) -->
+  <div class="tab-pane" id="tabPaneNet">
+    <div class="net-container">
+      
+      <!-- Status & Width Bar -->
+      <div class="net-header-bar">
+        <div class="net-status-group">
+          <span class="net-pill" id="netModelPill">🖥️ Model: <strong>TRS-80 Model 100/102</strong></span>
+          <span class="net-pill active" id="netWidthPill">↔️ Width: <strong>40-Col (Standard LCD)</strong></span>
+          <span class="net-pill" id="netBridgePill">⚡ Bridge: <strong>Standby</strong></span>
+        </div>
+        <div class="net-status-group">
+          <span style="font-size: 12px; color: #8b949e; font-weight: bold;">WIDTH OVERRIDE:</span>
+          <div class="net-btn-group">
+            <button class="net-toggle-btn active" id="btnWidth40" onclick="netBridgeEngine.setUserWidth(40)">40-Col Standard</button>
+            <button class="net-toggle-btn" id="btnWidth80" onclick="netBridgeEngine.setUserWidth(80)">80-Col Ultrascreen</button>
+          </div>
+          <button class="net-action-btn" onclick="netBridgeEngine.sendBridgeMenu()">📋 Push Menu to Screen</button>
+          <button class="net-action-btn danger" onclick="netBridgeEngine.disconnectBbs()">🔌 Hangup / Reset</button>
+        </div>
+      </div>
+
+      <!-- Postal / ZIP Code Engine -->
+      <div class="net-card" style="border-left: 4px solid #58a6ff;">
+        <h3 class="net-card-title">
+          <span>📍 Postal / ZIP Code Location Engine (US & Canada)</span>
+          <span id="locStatusBadge" style="font-size: 11px; font-weight: normal; color: #8b949e;">Auto-powers Weather & Local News</span>
+        </h3>
+        <div class="net-card-body">
+          <div class="net-input-row">
+            <input type="text" id="netZipInput" class="net-input" placeholder="Enter US ZIP (e.g. 90210) or Canadian Postal Code (e.g. K1A 0B1)..." style="max-width: 400px;" />
+            <button class="net-action-btn green" onclick="netBridgeEngine.saveLocation()">Save & Lookup Location</button>
+            <span id="resolvedLocationDisplay" style="font-weight: bold; color: #58a6ff; margin-left: 10px;"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Cards Grid -->
+      <div class="net-grid">
+        
+        <!-- Card 1: Local Weather -->
+        <div class="net-card">
+          <h3 class="net-card-title">
+            <span>☀️ Local Weather Forecast</span>
+            <span style="font-size: 11px; color: #8b949e;">Open-Meteo Engine</span>
+          </h3>
+          <div class="net-card-body">
+            <p style="margin: 0; font-size: 12px; color: #8b949e;">Pushed in clean, column-wrapped text straight to the Model T screen with single-key navigation.</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+              <button class="net-action-btn" onclick="netBridgeEngine.fetchAndSendWeather(false)">Current Conditions + 3-Day</button>
+              <button class="net-action-btn" onclick="netBridgeEngine.fetchAndSendWeather(true)">7-Day Extended Forecast</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2: News & Live Feeds -->
+        <div class="net-card">
+          <h3 class="net-card-title">
+            <span>📰 News Feeds & Text Digests</span>
+            <span style="font-size: 11px; color: #8b949e;">ASCII Filtered</span>
+          </h3>
+          <div class="net-card-body">
+            <p style="margin: 0; font-size: 12px; color: #8b949e;">Curated RSS & JSON text news with pagination and word-wrapping.</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+              <button class="net-action-btn" onclick="netBridgeEngine.fetchAndSendNews('local')">📍 Local News</button>
+              <button class="net-action-btn" onclick="netBridgeEngine.fetchAndSendNews('cbc_top')">🍁 CBC Top Stories</button>
+              <button class="net-action-btn" onclick="netBridgeEngine.fetchAndSendNews('cbc_tech')">💻 CBC Tech</button>
+              <button class="net-action-btn" onclick="netBridgeEngine.fetchAndSendNews('npr')">🎙️ NPR News</button>
+              <button class="net-action-btn" onclick="netBridgeEngine.fetchAndSendNews('cnn')">🌐 CNN Lite</button>
+              <button class="net-action-btn" onclick="netBridgeEngine.fetchAndSendHackerNews()">🟧 Hacker News (Top 10)</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3: Telnet BBS Speed Dial -->
+        <div class="net-card" style="grid-column: 1 / -1;">
+          <h3 class="net-card-title">
+            <span>💾 Curated Telnet BBS Speed Dial (<span id="bbsWidthLabel">40-Column Presets</span>)</span>
+            <span style="font-size: 11px; color: #8b949e;">Connects via WebSocket-to-Telnet Proxy</span>
+          </h3>
+          <div class="net-card-body">
+            <div id="bbsPresetsList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 10px;">
+              <!-- Populated dynamically based on 40 vs 80 col -->
+            </div>
+
+            <!-- Custom Dialer Row -->
+            <div style="border-top: 1px solid #30363d; padding-top: 12px; margin-top: 6px;">
+              <div style="font-weight: bold; margin-bottom: 6px; font-size: 13px;">Custom Telnet Address (or type ATDT host:port on Model T):</div>
+              <div class="net-input-row">
+                <input type="text" id="customBbsInput" class="net-input" placeholder="host:port (e.g. bbs.fozztexx.com:23)" style="max-width: 360px;" />
+                <button class="net-action-btn green" onclick="netBridgeEngine.dialCustomBbs()">Dial Custom BBS</button>
+                <button class="net-action-btn danger" onclick="netBridgeEngine.disconnectBbs()">Disconnect BBS</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 4: Proxy & Network Configuration -->
+        <div class="net-card" style="grid-column: 1 / -1;">
+          <h3 class="net-card-title">
+            <span>⚙️ Proxy Settings (Self-Hostable & Offline Config)</span>
+            <button class="net-action-btn" style="padding: 3px 8px; font-size: 11px;" onclick="netBridgeEngine.toggleProxySettings()">Toggle Settings</button>
+          </h3>
+          <div class="net-card-body" id="proxySettingsBody" style="display: none;">
+            <p style="margin: 0; font-size: 12px; color: #8b949e;">Since browsers cannot open raw TCP sockets directly, Telnet connections use a WebSocket-to-Telnet proxy. You can run your own websockify or proxy locally.</p>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <label style="font-size: 12px; font-weight: bold;">WebSocket-to-Telnet Proxy URL (wss://):
+                <input type="text" id="proxyWsInput" class="net-input" style="width: 100%; margin-top: 4px;" />
+              </label>
+              <label style="font-size: 12px; font-weight: bold;">CORS Proxy URL (for external RSS feeds):
+                <input type="text" id="proxyCorsInput" class="net-input" style="width: 100%; margin-top: 4px;" />
+              </label>
+              <div style="display: flex; gap: 8px; margin-top: 4px;">
+                <button class="net-action-btn green" onclick="netBridgeEngine.saveProxySettings()">Save Proxy Settings</button>
+                <button class="net-action-btn" onclick="netBridgeEngine.resetProxyDefaults()">Reset Defaults</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 5: Live Activity Log -->
+        <div class="net-card" style="grid-column: 1 / -1;">
+          <h3 class="net-card-title">
+            <span>📟 Live Bridge Monitor</span>
+            <button class="net-action-btn" style="padding: 2px 8px; font-size: 11px;" onclick="document.getElementById('netLogBox').textContent=''">Clear Log</button>
+          </h3>
+          <div class="net-card-body">
+            <div class="net-log-box" id="netLogBox">Porta MT: Web & BBS Internet Bridge initialized. Ready for Model T connection.\n</div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Tab 4: Help & Reference -->
   <div class="tab-pane" id="tabPaneHelp">
     <div class="help-container">
       <h2>Porta MT: AirDrive Quick Reference & Guide</h2>
 
       <h3>1. Initial Bootstrap & Installation</h3>
-      <p>To load the AirDrive software suite on a freshly wiped or new TRS-80 Model 100 / Model 102:</p>
+      <p>To load the AirDrive software suite on a freshly wiped or new TRS-80 Model 100 / Model 102 / Tandy 200:</p>
       <ol>
-        <li>Turn ON Model 100 and ensure the AirDrive is connected to the RS-232 DB-25 port.</li>
-        <li>From the Model 100 main menu, press <code>Enter</code> on <code>BASIC</code>.</li>
-        <li>Type <code>RUN "COM:98N1E"</code> and press <code>Enter</code>.</li>
-        <li>Within 15 seconds, press and hold the button on the AirDrive for <strong>under 2 seconds</strong>.</li>
+        <li>Turn ON Model 100/200 and ensure the AirDrive is connected to the RS-232 DB-25 port.</li>
+        <li>From the Model 100/200 main menu, press <code>Enter</code> on <code>BASIC</code>.</li>
+        <li>Type <code>RUN "COM:98N1E"</code> (Model 100/102) or <code>RUN "COM:98N1ENN"</code> (Model 200) and press <code>Enter</code>.</li>
+        <li>Within 15 seconds, press and hold the button on the AirDrive (under 2s for Model 100, 3s+ for Model 200).</li>
         <li>The system will automatically install <code>TSLOAD.CO</code> and create the <code>AIRDRV.BA</code> system menu.</li>
       </ol>
 
       <h3>2. The AIRDRV.BA System Menu</h3>
-      <p>Running <code>AIRDRV.BA</code> from the Model 100 menu provides instant access to all AirDrive capabilities:</p>
+      <p>Running <code>AIRDRV.BA</code> from the Model 100/200 menu provides instant access to all AirDrive capabilities:</p>
       <ul>
-        <li><code>1: BT-Keyboard</code> — Use the Model 100 keyboard wirelessly with your modern PC, Mac, iPad, or phone.</li>
+        <li><code>1: BT-Keyboard</code> — Use the Model 100/200 keyboard wirelessly with your modern PC, Mac, iPad, or phone.</li>
         <li><code>2: TS-DOS (Floppy)</code> — Launch Traveling Software TS-DOS for full floppy disk operations across 5 virtual drives.</li>
-        <li><code>3: Virtual DVI</code> — Activate high-speed wireless 80-column external CRT display on Tab 2 of this browser app!</li>
-        <li><code>4: PAKU-100</code> — Chomping maze game.</li>
-        <li><code>5: Block-TRS</code> — Falling block puzzle.</li>
-        <li><code>6: Pipe-100</code> — Inspired by Pipe Dream.</li>
-        <li><code>7: Mine-100</code> — Inspired by Minesweeper.</li>
-        <li><code>Q: Quit</code> — Return cleanly to the TRS-80 Model 100 main menu.</li>
+        <li><code>3: Virtual DVI</code> — Activate high-speed wireless 80-column external CRT display on Tab 2 of this browser app (Model 100/102).</li>
+        <li><code>4: Web / BBS</code> — Launch wireless Internet Bridge: live weather, news feeds, and Telnet BBS dialer!</li>
+        <li><code>5: PAKU-100 / Chomp-200</code> — Chomping maze game.</li>
+        <li><code>6: Block-TRS</code> — Falling block puzzle.</li>
+        <li><code>7: Pipe-100 / Pipe-200</code> — Inspired by Pipe Dream.</li>
+        <li><code>8: Mine-100 / Mine-200</code> — Inspired by Minesweeper.</li>
+        <li><code>Q: Quit</code> — Return cleanly to the main menu.</li>
       </ul>
 
       <h3>3. AirDVI Video Control Commands (in BASIC)</h3>
@@ -947,10 +1319,21 @@
         <tr><td><code>PRINT@ &lt;pos&gt;, "text"</code></td><td>Print directly at linear CRT cell (0 to 1919 in WIDTH 80).</td></tr>
       </table>
 
-      <h3>4. Firmware Updates (OTA)</h3>
-      <p>The Porta MT: AirDrive firmware can be updated wirelessly using Web Bluetooth or via USB-C mass storage drag-and-drop.</p>
-      <div style="margin-top: 15px;">
-        <button onclick="location.href='https://www.portacoco.com/airdrive_ota.html'" style="background-color: #2a4d87; color: #fff;">Open AirDrive Firmware OTA Updater</button>
+      <h3>4. Web & BBS Internet Bridge Instructions</h3>
+      <p>The Web & BBS Bridge connects your vintage TRS-80 Model 100/102 or Tandy 200 directly to live internet resources and Telnet bulletin boards without requiring any TCP/IP hardware on the vintage computer:</p>
+      <ul>
+        <li><strong>40-Col Standard vs 80-Col Ultrascreen:</strong> When launching Web/BBS in <code>AIRDRV.BA</code>, press <code>[4]</code> for native ROM font or <code>[8]</code> for the micro-font 80-column Ultrascreen driver loaded automatically from AirDrive flash into protected high memory.</li>
+        <li><strong>Single-Key Navigation:</strong> When reading news or weather, text is neatly paginated so nothing scrolls unreadable off your LCD. Press <code>[Space]</code> or <code>[Enter]</code> for Next Page, <code>[B]</code> for Previous Page, and <code>[M]</code> to return to the Bridge Menu.</li>
+        <li><strong>Direct Keyboard BBS Dialing:</strong> You can dial any vintage BBS directly from your Model T keyboard by typing <code>ATDT host:port</code> (e.g. <code>ATDT bbs.fozztexx.com:23</code>).</li>
+        <li><strong>Safe Memory Cleanup:</strong> Pressing <code>[F8]</code> safely exits the bridge, closes the COM port, unhooks Ultrascreen, reclaims protected RAM with <code>CLEAR 256, MAXRAM</code>, and restores AirDrive TPDD disk mode.</li>
+      </ul>
+
+      <div id="firmwareUpdateSection">
+        <h3>5. Firmware Updates (OTA)</h3>
+        <p>The Porta MT: AirDrive firmware can be updated wirelessly using Web Bluetooth or via USB-C mass storage drag-and-drop.</p>
+        <div style="margin-top: 15px;">
+          <button onclick="location.href='https://www.portacoco.com/airdrive_ota.html'" style="background-color: #2a4d87; color: #fff;">Open AirDrive Firmware OTA Updater</button>
+        </div>
       </div>
     </div>
   </div>
@@ -982,7 +1365,7 @@
   <script src="m100-basic.js"></script>
   <script>
     
-    // --- 3-Tab UI Controller ---
+    // --- 4-Tab UI Controller ---
     let currentTab = "floppy";
     function switchTab(tabName) {
       currentTab = tabName;
@@ -993,6 +1376,27 @@
         document.getElementById("tabBtnFloppy").classList.add("active");
         document.getElementById("tabPaneFloppy").classList.add("active");
         document.getElementById("btnRefresh").style.display = "";
+      } else if (tabName === "dvi") {
+        document.getElementById("tabBtnDvi").classList.add("active");
+        document.getElementById("tabPaneDvi").classList.add("active");
+        document.getElementById("dviBadge").classList.remove("visible");
+        document.getElementById("btnRefresh").style.display = "none";
+        if (dviTerminal) {
+          dviTerminal.applySizing();
+          dviTerminal.requestRender();
+        }
+      } else if (tabName === "net") {
+        document.getElementById("tabBtnNet").classList.add("active");
+        document.getElementById("tabPaneNet").classList.add("active");
+        document.getElementById("btnRefresh").style.display = "none";
+        const netBadge = document.getElementById("netBadge");
+        if (netBadge) netBadge.classList.remove("visible");
+      } else if (tabName === "help") {
+        document.getElementById("tabBtnHelp").classList.add("active");
+        document.getElementById("tabPaneHelp").classList.add("active");
+        document.getElementById("btnRefresh").style.display = "none";
+      }
+    }
       } else if (tabName === "dvi") {
         document.getElementById("tabBtnDvi").classList.add("active");
         document.getElementById("tabPaneDvi").classList.add("active");
@@ -1849,6 +2253,10 @@
         diskControls.style.display = 'flex';
         controlDriveTitle.innerText = `Virtual DISK ${activeDrive} Commands`;
 
+        if (window.netBridgeEngine) {
+          window.netBridgeEngine.onBleConnected();
+        }
+
         // Auto request active drive files
         requestList(activeDrive);
 
@@ -1867,6 +2275,9 @@
       notifyChar = null;
       dviNotifyChar = null;
       updateDviStatus(false);
+      if (window.netBridgeEngine) {
+        window.netBridgeEngine.onBleDisconnected();
+      }
       isDownloading = false;
       downloadBuffer = null;
       if (pendingList) {
@@ -1912,6 +2323,20 @@
     }
 
     function handleNotifications(event) {
+      const val = event.target.value;
+      const rawData = new Uint8Array(val.buffer, val.byteOffset, val.byteLength);
+
+      // 1. Intercept binary / raw NETRX: stream from Model T
+      if (rawData.length >= 6 &&
+          rawData[0] === 78 && rawData[1] === 69 && rawData[2] === 84 &&
+          rawData[3] === 82 && rawData[4] === 88 && rawData[5] === 58) {
+        const payload = rawData.subarray(6);
+        if (window.netBridgeEngine) {
+          window.netBridgeEngine.onSerialBytesFromModelT(payload);
+        }
+        return;
+      }
+
       if (isDownloading) {
         const data = new Uint8Array(event.target.value.buffer);
         const eofCheck = new TextDecoder().decode(data);
@@ -1976,6 +2401,16 @@
               const p = pendingList;
               pendingList = null;
               p.resolve(p.files);
+            }
+          } else if (line.startsWith('NET:')) {
+            const parts = line.split(':');
+            if (window.netBridgeEngine && parts.length >= 3) {
+              window.netBridgeEngine.onModelAndWidthReceived(parts[1], parts[2]);
+            }
+          } else if (line.startsWith('MODE:')) {
+            const modeName = line.split(':')[1];
+            if (window.netBridgeEngine) {
+              window.netBridgeEngine.onModeReceived(modeName);
             }
           }
         }
@@ -2828,8 +3263,1116 @@
       }
     }
 
-    // Initialize DviTerminal when DOM is loaded
+    // ============================================================================
+    // --- Web / BBS Internet Bridge Modular Engine ---
+    // ============================================================================
+
+    async function sendBridgeDataToModelT(bytes) {
+      if (!writeChar) {
+        console.warn('Cannot send bridge data: AirDrive not connected');
+        return;
+      }
+      const prefix = new TextEncoder().encode("NETTX:");
+      const packet = new Uint8Array(prefix.length + bytes.length);
+      packet.set(prefix, 0);
+      packet.set(bytes, prefix.length);
+
+      try {
+        if (typeof writeChar.writeValueWithoutResponse === 'function') {
+          await writeChar.writeValueWithoutResponse(packet);
+        } else {
+          await writeChar.writeValue(packet);
+        }
+      } catch (e) {
+        console.error('Error sending bridge data over BLE:', e);
+      }
+    }
+
+    // --- 1. LocationService (US & Canadian Postal Codes) ---
+    class LocationService {
+      constructor() {
+        this.STORAGE_KEY = 'airdrive_location_cache';
+        this.TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30-day cache
+      }
+
+      normalizeCode(raw) {
+        if (!raw) return null;
+        const clean = raw.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+        // Canadian 6-char Postal Code: A1A 1A1
+        if (/^[A-Z]\d[A-Z]\d[A-Z]\d$/.test(clean)) {
+          return { type: 'CA', code: `${clean.slice(0, 3)} ${clean.slice(3)}`, fsa: clean.slice(0, 3) };
+        }
+        // Canadian 3-char FSA: A1A
+        if (/^[A-Z]\d[A-Z]$/.test(clean)) {
+          return { type: 'CA', code: clean, fsa: clean };
+        }
+        // US 5-digit ZIP: 12345
+        if (/^\d{5}/.test(clean)) {
+          return { type: 'US', code: clean.slice(0, 5), fsa: clean.slice(0, 5) };
+        }
+        return null;
+      }
+
+      getCached(code) {
+        try {
+          const cache = JSON.parse(localStorage.getItem(this.STORAGE_KEY) || '{}');
+          const entry = cache[code];
+          if (entry && (Date.now() - entry.timestamp < this.TTL_MS)) {
+            return entry;
+          }
+        } catch (e) {}
+        return null;
+      }
+
+      setCached(code, data) {
+        try {
+          const cache = JSON.parse(localStorage.getItem(this.STORAGE_KEY) || '{}');
+          cache[code] = { ...data, timestamp: Date.now() };
+          localStorage.setItem(this.STORAGE_KEY, JSON.stringify(cache));
+        } catch (e) {}
+      }
+
+      async resolveLocation(inputCode) {
+        const parsed = this.normalizeCode(inputCode);
+        if (!parsed) {
+          throw new Error('Please enter a valid US ZIP Code (e.g. 90210) or Canadian Postal Code (e.g. K1A 0B1).');
+        }
+
+        const cached = this.getCached(parsed.code);
+        if (cached) return cached;
+
+        // Tier 1: Open-Meteo Geocoding API
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 6000);
+          const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(parsed.code)}&count=1&language=en&format=json`;
+          const res = await fetch(url, { signal: controller.signal });
+          clearTimeout(timeoutId);
+          if (res.ok) {
+            const json = await res.json();
+            if (json.results && json.results.length > 0) {
+              const item = json.results[0];
+              const info = {
+                code: parsed.code,
+                city: item.name || '',
+                region: item.admin1 || '',
+                country: item.country_code ? item.country_code.toUpperCase() : parsed.type,
+                lat: item.latitude,
+                lon: item.longitude
+              };
+              this.setCached(parsed.code, info);
+              return info;
+            }
+          }
+        } catch (e) {
+          console.warn('Open-Meteo Geocoding failed, trying Zippopotam.us fallback:', e);
+        }
+
+        // Tier 2: Zippopotam.us Fallback
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 6000);
+          const countryPath = (parsed.type === 'CA') ? 'ca' : 'us';
+          const codeLookup = (parsed.type === 'CA') ? parsed.fsa : parsed.code;
+          const url = `https://api.zippopotam.us/${countryPath}/${encodeURIComponent(codeLookup)}`;
+          const res = await fetch(url, { signal: controller.signal });
+          clearTimeout(timeoutId);
+          if (res.ok) {
+            const json = await res.json();
+            const place = (json.places && json.places[0]) || {};
+            const info = {
+              code: parsed.code,
+              city: place['place name'] || '',
+              region: place['state abbreviation'] || place['state'] || '',
+              country: parsed.type,
+              lat: parseFloat(place.latitude),
+              lon: parseFloat(place.longitude)
+            };
+            this.setCached(parsed.code, info);
+            return info;
+          }
+        } catch (e) {
+          console.warn('Zippopotamus fallback lookup failed:', e);
+        }
+
+        throw new Error(`Unable to resolve coordinates for '${parsed.code}'. Please verify the code.`);
+      }
+    }
+
+    // --- 2. WeatherService (Open-Meteo Forecast & WMO Formatting) ---
+    class WeatherService {
+      constructor() {
+        this.STORAGE_KEY = 'airdrive_weather_cache';
+        this.TTL_MS = 15 * 60 * 1000; // 15-minute cache
+      }
+
+      getWmoText(code) {
+        const table = {
+          0: "Clear Sky", 1: "Mainly Clear", 2: "Partly Cloudy", 3: "Overcast",
+          45: "Fog", 48: "Rime Fog",
+          51: "Light Drizzle", 53: "Mod. Drizzle", 55: "Dense Drizzle",
+          61: "Slight Rain", 63: "Mod. Rain", 65: "Heavy Rain",
+          66: "Freezing Rain", 67: "Hvy Frz Rain",
+          71: "Slight Snow", 73: "Mod. Snow", 75: "Heavy Snow", 77: "Snow Grains",
+          80: "Rain Showers", 81: "Mod. Showers", 82: "Violent Showers",
+          85: "Snow Showers", 86: "Hvy Snow Shwrs",
+          95: "Thunderstorm", 96: "T-Storm w/ Hail", 99: "Hvy T-Storm"
+        };
+        return table[code] || "Code " + code;
+      }
+
+      async fetchForecast(lat, lon, country = 'US') {
+        const cacheKey = `${lat.toFixed(2)},${lon.toFixed(2)}`;
+        try {
+          const cache = JSON.parse(localStorage.getItem(this.STORAGE_KEY) || '{}');
+          const entry = cache[cacheKey];
+          if (entry && (Date.now() - entry.timestamp < this.TTL_MS)) {
+            return entry.data;
+          }
+        } catch (e) {}
+
+        const isCA = (country === 'CA');
+        const tempUnit = isCA ? 'celsius' : 'fahrenheit';
+        const windUnit = isCA ? 'kmh' : 'mph';
+
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&temperature_unit=${tempUnit}&wind_speed_unit=${windUnit}&timezone=auto`;
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 6000);
+        const res = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (!res.ok) throw new Error(`Weather service returned HTTP ${res.status}`);
+        const data = await res.json();
+
+        try {
+          const cache = JSON.parse(localStorage.getItem(this.STORAGE_KEY) || '{}');
+          cache[cacheKey] = { data, timestamp: Date.now() };
+          localStorage.setItem(this.STORAGE_KEY, JSON.stringify(cache));
+        } catch (e) {}
+
+        return data;
+      }
+
+      formatWeather(loc, forecast, width = 40, isWeekly = false) {
+        const w = (width === 80) ? 79 : 39;
+        const divider = "-".repeat(w);
+        const isCA = (loc.country === 'CA');
+        const tempSuffix = isCA ? "C" : "F";
+        const windSuffix = isCA ? "km/h" : "mph";
+
+        const curr = forecast.current || {};
+        const condText = this.getWmoText(curr.weather_code);
+        const now = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+        let lines = [];
+        lines.push(`WEATHER: ${loc.city.toUpperCase()}, ${loc.region.toUpperCase()} (${loc.country})`);
+        lines.push(`Reported: ${now}`);
+        lines.push(divider);
+        lines.push(`Condition: ${condText}`);
+        lines.push(`Temp: ${Math.round(curr.temperature_2m)}°${tempSuffix}  (Feels like: ${Math.round(curr.apparent_temperature)}°${tempSuffix})`);
+        lines.push(`Humidity: ${curr.relative_humidity_2m}%   Wind: ${Math.round(curr.wind_speed_10m)} ${windSuffix}`);
+        lines.push(divider);
+
+        if (forecast.daily && forecast.daily.time) {
+          lines.push(isWeekly ? "7-DAY OUTLOOK:" : "3-DAY OUTLOOK:");
+          const count = isWeekly ? Math.min(forecast.daily.time.length, 7) : Math.min(forecast.daily.time.length, 3);
+          for (let i = 0; i < count; i++) {
+            const dStr = forecast.daily.time[i];
+            const dt = new Date(dStr + "T00:00:00");
+            const dayName = dt.toLocaleDateString('en-US', { weekday: 'short' });
+            const maxT = Math.round(forecast.daily.temperature_2m_max[i]);
+            const minT = Math.round(forecast.daily.temperature_2m_min[i]);
+            const pop = forecast.daily.precipitation_probability_max ? forecast.daily.precipitation_probability_max[i] : 0;
+            const cDesc = this.getWmoText(forecast.daily.weather_code[i]);
+
+            if (width === 80) {
+              lines.push(`  ${dayName.padEnd(4)}: High ${String(maxT).padStart(3)}° Low ${String(minT).padStart(3)}° Rain: ${String(pop).padStart(2)}% | ${cDesc}`);
+            } else {
+              lines.push(`${dayName}: H:${maxT}° L:${minT}° Rain:${pop}%`);
+              lines.push(`      ${cDesc}`);
+            }
+          }
+          lines.push(divider);
+        }
+        return lines.join("\r\n") + "\r\n";
+      }
+    }
+
+    // --- 3. NewsService (Google News RSS, Presets & Hacker News) ---
+    class NewsService {
+      constructor() {
+        this.DEFAULT_CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+      }
+
+      getCorsProxy() {
+        return localStorage.getItem('airdrive_cors_proxy') || this.DEFAULT_CORS_PROXY;
+      }
+
+      stripHtml(html) {
+        if (!html) return '';
+        return html
+          .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+          .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+          .replace(/<[^>]+>/g, ' ')
+          .replace(/&amp;/g, '&')
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/&quot;/g, '"')
+          .replace(/&#39;/g, "'")
+          .replace(/&apos;/g, "'")
+          .replace(/&#8217;/g, "'")
+          .replace(/&#8220;/g, '"')
+          .replace(/&#8221;/g, '"')
+          .replace(/&#8212;/g, '--')
+          .replace(/[\u2018\u2019]/g, "'")
+          .replace(/[\u201C\u201D]/g, '"')
+          .replace(/[\u2013\u2014]/g, '--')
+          .replace(/\s+/g, ' ')
+          .trim();
+      }
+
+      async fetchXml(url) {
+        const proxy = this.getCorsProxy().trim();
+        const finalUrl = proxy ? `${proxy}${encodeURIComponent(url)}` : url;
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 7000);
+        const res = await fetch(finalUrl, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const text = await res.text();
+        const parser = new DOMParser();
+        const xml = parser.parseFromString(text, 'text/xml');
+        return xml;
+      }
+
+      async fetchHackerNews(limit = 10) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 6000);
+        const topRes = await fetch('https://hacker-news.firebaseio.com/v0/topstories.json', { signal: controller.signal });
+        clearTimeout(timeoutId);
+        if (!topRes.ok) throw new Error(`HN API returned HTTP ${topRes.status}`);
+        const ids = (await topRes.json()).slice(0, limit);
+
+        const stories = [];
+        for (const id of ids) {
+          try {
+            const itemRes = await fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`);
+            if (itemRes.ok) {
+              const item = await itemRes.json();
+              stories.push({
+                title: this.stripHtml(item.title),
+                source: item.by ? `by ${item.by}` : 'HN',
+                score: item.score || 0
+              });
+            }
+          } catch (e) {}
+        }
+        return stories;
+      }
+
+      async fetchGoogleLocalNews(city, region, country = 'US') {
+        const isCA = (country === 'CA');
+        const query = `${city} ${region}`;
+        const hl = isCA ? 'en-CA' : 'en-US';
+        const gl = isCA ? 'CA' : 'US';
+        const ceid = isCA ? 'CA:en' : 'US:en';
+
+        const url = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=${hl}&gl=${gl}&ceid=${ceid}`;
+        try {
+          const xml = await this.fetchXml(url);
+          const items = Array.from(xml.querySelectorAll('item'));
+          if (items.length > 0) return this.parseRssItems(items);
+        } catch (e) {
+          console.warn('Local news query failed, falling back to Top Stories:', e);
+        }
+
+        // Fallback: National Top Stories
+        const topUrl = `https://news.google.com/rss?hl=${hl}&gl=${gl}&ceid=${ceid}`;
+        const topXml = await this.fetchXml(topUrl);
+        return this.parseRssItems(Array.from(topXml.querySelectorAll('item')));
+      }
+
+      async fetchPreset(presetKey) {
+        const map = {
+          cbc_top: 'https://www.cbc.ca/cmlink/rss-topstories',
+          cbc_tech: 'https://www.cbc.ca/cmlink/rss-technology',
+          npr: 'https://feeds.npr.org/1001/rss.xml',
+          cnn: 'http://rss.cnn.com/rss/cnn_topstories.rss'
+        };
+        const url = map[presetKey];
+        if (!url) throw new Error(`Unknown news preset: ${presetKey}`);
+        const xml = await this.fetchXml(url);
+        return this.parseRssItems(Array.from(xml.querySelectorAll('item')));
+      }
+
+      parseRssItems(items) {
+        return items.slice(0, 10).map(item => {
+          const title = this.stripHtml(item.querySelector('title')?.textContent || '');
+          const desc = this.stripHtml(item.querySelector('description')?.textContent || '');
+          const source = this.stripHtml(item.querySelector('source')?.textContent || '');
+          return { title, desc, source };
+        });
+      }
+
+      formatArticles(title, articles, width = 40) {
+        const w = (width === 80) ? 79 : 39;
+        const divider = "=".repeat(w);
+        const subDivider = "-".repeat(w);
+
+        let lines = [];
+        lines.push(title.toUpperCase());
+        lines.push(divider);
+
+        articles.forEach((art, idx) => {
+          lines.push(`[${idx + 1}] ${art.title}`);
+          if (art.source) lines.push(`    Source: ${art.source}`);
+          if (art.desc && art.desc !== art.title) {
+            const snippet = art.desc.slice(0, width === 80 ? 140 : 80);
+            lines.push(`    ${snippet}...`);
+          }
+          lines.push(subDivider);
+        });
+
+        return lines.join("\r\n") + "\r\n";
+      }
+
+      formatHackerNews(stories, width = 40) {
+        const w = (width === 80) ? 79 : 39;
+        const divider = "=".repeat(w);
+        const subDivider = "-".repeat(w);
+
+        let lines = [];
+        lines.push("HACKER NEWS - TOP STORIES");
+        lines.push(divider);
+
+        stories.forEach((st, idx) => {
+          lines.push(`[${idx + 1}] ${st.title}`);
+          lines.push(`    ${st.score} points | ${st.source}`);
+          lines.push(subDivider);
+        });
+
+        return lines.join("\r\n") + "\r\n";
+      }
+    }
+
+    // --- 4. BbsService (WebSocket-to-Telnet Proxy & Presets) ---
+    class BbsService {
+      constructor(onDataCallback, onStatusCallback) {
+        this.onData = onDataCallback;
+        this.onStatus = onStatusCallback;
+        this.ws = null;
+        this.connected = false;
+        this.currentHost = '';
+        this.currentPort = 23;
+      }
+
+      getProxyUrl() {
+        return localStorage.getItem('airdrive_bbs_proxy_url') || 'wss://telnet.retrograde.fun:8080/';
+      }
+
+      getPresets(width = 40) {
+        if (width === 80) {
+          return [
+            { name: "SDF Public Access UNIX", host: "tty.sdf.org", port: 23, desc: "Classic UNIX shell & BBS" },
+            { name: "Al's Geek Lab BBS", host: "bbs.alsgeeklab.com", port: 2323, desc: "Retro tech discussions" },
+            { name: "Clutch BBS", host: "clutchbbs.com", port: 23, desc: "Wildcat! Sysop multi-node" },
+            { name: "0xDECAFBAD BBS", host: "bbs.decafbad.com", port: 6523, desc: "Retro computing portal" },
+            { name: "13th Leader BBS", host: "13thleader.net", port: 23, desc: "Vintage BBS community" }
+          ];
+        } else {
+          return [
+            { name: "Level 29 BBS", host: "bbs.fozztexx.com", port: 23, desc: "40-col friendly vintage BBS" },
+            { name: "The Keep", host: "thekeep.net", port: 23, desc: "Vintage systems & file library" },
+            { name: "300 F-ing Baud BBS", host: "300baud.dynu.net", port: 2525, desc: "Paced 300/1200 baud terminal" },
+            { name: "Particles! BBS", host: "particlesbbs.dyndns.org", port: 6400, desc: "Commodore & TRS-80 text" },
+            { name: "Amis XE BBS", host: "amis86.ddns.net", port: 9000, desc: "Atari/Tandy friendly menus" }
+          ];
+        }
+      }
+
+      connect(host, port = 23) {
+        this.disconnect();
+        this.currentHost = host;
+        this.currentPort = port;
+
+        const proxyBase = this.getProxyUrl().trim();
+        let wsUrl = proxyBase;
+        if (proxyBase.includes('?')) {
+          wsUrl += `&target=${encodeURIComponent(host)}:${port}`;
+        } else {
+          if (!wsUrl.endsWith('/')) wsUrl += '/';
+          wsUrl += `${encodeURIComponent(host)}/${port}`;
+        }
+
+        this.onStatus(`Connecting to ${host}:${port}...`, 'connecting');
+
+        try {
+          this.ws = new WebSocket(wsUrl);
+          this.ws.binaryType = 'arraybuffer';
+
+          this.ws.onopen = () => {
+            this.connected = true;
+            this.onStatus(`Connected to ${host}:${port}`, 'connected');
+            if (this.onData) this.onData(`\r\n*** CONNECT 19200 (${host}:${port}) ***\r\n`);
+          };
+
+          this.ws.onmessage = (event) => {
+            if (!this.connected) return;
+            const data = event.data;
+            if (typeof data === 'string') {
+              if (this.onData) this.onData(data);
+            } else if (data instanceof ArrayBuffer) {
+              const bytes = new Uint8Array(data);
+              if (this.onData) this.onData(bytes);
+            }
+          };
+
+          this.ws.onclose = () => {
+            this.connected = false;
+            this.onStatus(`Disconnected from ${host}`, 'disconnected');
+            if (this.onData) this.onData(`\r\n*** NO CARRIER (${host}) ***\r\n`);
+          };
+
+          this.ws.onerror = (err) => {
+            console.error('BBS WebSocket error:', err);
+            this.onStatus(`Connection failed to ${host}`, 'error');
+          };
+        } catch (e) {
+          this.onStatus(`Connection error: ${e.message}`, 'error');
+        }
+      }
+
+      send(data) {
+        if (!this.connected || !this.ws) return false;
+        if (this.ws.readyState === WebSocket.OPEN) {
+          this.ws.send(data);
+          return true;
+        }
+        return false;
+      }
+
+      disconnect() {
+        if (this.ws) {
+          try { this.ws.close(); } catch (e) {}
+          this.ws = null;
+        }
+        this.connected = false;
+        this.onStatus('Disconnected', 'disconnected');
+      }
+    }
+
+    // --- 5. TextPacer (Word Wrap, ANSI Filter, Flow Control & BLE Pacing) ---
+    class TextPacer {
+      constructor(sendBleChunkFn) {
+        this.sendBleChunk = sendBleChunkFn;
+        this.isPaused = false;
+        this.currentWidth = 40;
+        this.currentModel = '100';
+        this.pages = [];
+        this.currentPageIdx = 0;
+        this.isPaginating = false;
+        this.onMenuRequested = null;
+      }
+
+      setWidth(w) {
+        this.currentWidth = (w === 80) ? 80 : 40;
+      }
+
+      setModel(m) {
+        this.currentModel = (m === '200' || m === 200) ? '200' : '100';
+      }
+
+      wrapText(text, maxCols) {
+        const lines = text.split(/\r?\n/);
+        const wrapped = [];
+        for (let rawLine of lines) {
+          if (rawLine.length <= maxCols) {
+            wrapped.push(rawLine);
+            continue;
+          }
+          let cur = rawLine;
+          while (cur.length > maxCols) {
+            let spaceIdx = cur.lastIndexOf(' ', maxCols);
+            if (spaceIdx <= 0) spaceIdx = maxCols;
+            wrapped.push(cur.slice(0, spaceIdx));
+            cur = cur.slice(spaceIdx).trimStart();
+          }
+          if (cur.length > 0) wrapped.push(cur);
+        }
+        return wrapped;
+      }
+
+      stripAnsi(text) {
+        return text.replace(/\x1B\[[0-9;]*[a-zA-Z]/g, '');
+      }
+
+      paginateAndSend(rawText, width = this.currentWidth) {
+        this.stopStream();
+        this.setWidth(width);
+
+        const maxCols = (width === 80) ? 79 : 39;
+        const cleanText = (width === 40) ? this.stripAnsi(rawText) : rawText;
+        const allLines = this.wrapText(cleanText, maxCols);
+
+        // Screen lines per page: M100 40-col is 6 text lines; M200 is 14 lines; 80-col is 14-16 lines.
+        const linesPerPage = (this.currentModel === '200') ? 14 : ((width === 80) ? 14 : 6);
+
+        this.pages = [];
+        for (let i = 0; i < allLines.length; i += linesPerPage) {
+          this.pages.push(allLines.slice(i, i + linesPerPage));
+        }
+
+        this.currentPageIdx = 0;
+        this.isPaginating = true;
+        this.sendPage(0);
+      }
+
+      sendPage(pageIdx) {
+        if (pageIdx < 0 || pageIdx >= this.pages.length) {
+          this.isPaginating = false;
+          return;
+        }
+        this.currentPageIdx = pageIdx;
+        const pageLines = this.pages[pageIdx];
+        const isLast = (pageIdx === this.pages.length - 1);
+
+        let output = "\x0C" + pageLines.join("\r\n") + "\r\n"; // 0x0C = Form Feed (CLS)
+        if (!isLast) {
+          output += `-- More (${pageIdx + 1}/${this.pages.length}) [Space]=Next [B]=Back [M]=Menu --\r\n`;
+        } else {
+          output += `-- End [B]=Back [M]=Menu --\r\n`;
+        }
+
+        this.sendRaw(output);
+      }
+
+      async sendRaw(textOrBytes) {
+        let bytes;
+        if (typeof textOrBytes === 'string') {
+          bytes = new TextEncoder().encode(textOrBytes);
+        } else {
+          bytes = textOrBytes;
+        }
+
+        // Chunk parameters: 40-col: ~70 chars / 50ms; 80-col Ultrascreen: ~35 chars / 60ms
+        const chunkSize = (this.currentWidth === 80) ? 35 : 70;
+        const chunkDelay = (this.currentWidth === 80) ? 60 : 50;
+
+        for (let i = 0; i < bytes.length; i += chunkSize) {
+          while (this.isPaused) {
+            await new Promise(r => setTimeout(r, 50));
+          }
+
+          const chunk = bytes.subarray(i, i + chunkSize);
+          if (this.sendBleChunk) {
+            await this.sendBleChunk(chunk);
+          }
+          await new Promise(r => setTimeout(r, chunkDelay));
+        }
+      }
+
+      handleModelTInput(data) {
+        let str = "";
+        if (typeof data === 'string') str = data;
+        else str = new TextDecoder().decode(data);
+
+        for (let char of str) {
+          const code = char.charCodeAt(0);
+
+          if (code === 0x13) { // XOFF
+            this.isPaused = true;
+            continue;
+          }
+          if (code === 0x11) { // XON
+            this.isPaused = false;
+            continue;
+          }
+
+          if (this.isPaginating) {
+            if (char === ' ' || char === '\r' || char === '\n') {
+              if (this.currentPageIdx < this.pages.length - 1) {
+                this.sendPage(this.currentPageIdx + 1);
+              } else {
+                this.isPaginating = false;
+                if (this.onMenuRequested) this.onMenuRequested();
+              }
+              return true;
+            } else if (char === 'B' || char === 'b') {
+              if (this.currentPageIdx > 0) {
+                this.sendPage(this.currentPageIdx - 1);
+              }
+              return true;
+            } else if (char === 'M' || char === 'm' || char === 'Q' || char === 'q' || code === 0x1B) {
+              this.isPaginating = false;
+              if (this.onMenuRequested) this.onMenuRequested();
+              return true;
+            }
+          }
+        }
+        return false;
+      }
+
+      stopStream() {
+        this.isPaginating = false;
+        this.isPaused = false;
+      }
+    }
+
+    // --- 6. NetBridgeEngine (Coordinator & Controller) ---
+    class NetBridgeEngine {
+      constructor() {
+        this.locationService = new LocationService();
+        this.weatherService = new WeatherService();
+        this.newsService = new NewsService();
+        this.textPacer = new TextPacer(async (chunk) => {
+          await sendBridgeDataToModelT(chunk);
+        });
+        this.bbsService = new BbsService(
+          (data) => this.onBbsDataReceived(data),
+          (msg, state) => this.onBbsStatusChange(msg, state)
+        );
+
+        this.model = '100';
+        this.width = 40;
+        this.serialLineBuffer = '';
+        this.cachedLocation = null;
+
+        this.textPacer.onMenuRequested = () => this.sendBridgeMenu();
+      }
+
+      init() {
+        // Load saved location
+        const savedLoc = localStorage.getItem('airdrive_active_location');
+        if (savedLoc) {
+          try {
+            this.cachedLocation = JSON.parse(savedLoc);
+            document.getElementById('netZipInput').value = this.cachedLocation.code;
+            this.updateLocationDisplay();
+          } catch (e) {}
+        }
+
+        // Load proxy settings
+        const proxyWs = localStorage.getItem('airdrive_bbs_proxy_url') || 'wss://telnet.retrograde.fun:8080/';
+        const proxyCors = localStorage.getItem('airdrive_cors_proxy') || 'https://api.allorigins.win/raw?url=';
+        const inWs = document.getElementById('proxyWsInput');
+        const inCors = document.getElementById('proxyCorsInput');
+        if (inWs) inWs.value = proxyWs;
+        if (inCors) inCors.value = proxyCors;
+
+        this.renderBbsPresets();
+      }
+
+      log(msg) {
+        const box = document.getElementById('netLogBox');
+        if (!box) return;
+        const time = new Date().toLocaleTimeString();
+        box.textContent += `[${time}] ${msg}\n`;
+        box.scrollTop = box.scrollHeight;
+      }
+
+      onBleConnected() {
+        const pill = document.getElementById('netBridgePill');
+        if (pill) {
+          pill.classList.add('active');
+          pill.innerHTML = '⚡ Bridge: <strong>Connected</strong>';
+        }
+        this.log('AirDrive BLE Connected. Ready for Web/BBS Bridge.');
+      }
+
+      onBleDisconnected() {
+        const pill = document.getElementById('netBridgePill');
+        if (pill) {
+          pill.classList.remove('active');
+          pill.innerHTML = '⚡ Bridge: <strong>Standby</strong>';
+        }
+        this.bbsService.disconnect();
+        this.textPacer.stopStream();
+        this.log('AirDrive BLE Disconnected.');
+      }
+
+      onModelAndWidthReceived(modelStr, widthStr) {
+        const m = (modelStr === '200') ? '200' : '100';
+        const w = (parseInt(widthStr, 10) === 80) ? 80 : 40;
+        this.model = m;
+        this.width = w;
+        this.textPacer.setModel(m);
+        this.textPacer.setWidth(w);
+
+        // Update UI Pills
+        const modelPill = document.getElementById('netModelPill');
+        if (modelPill) {
+          modelPill.innerHTML = (m === '200')
+            ? '🖥️ Model: <strong>Tandy Model 200</strong>'
+            : '🖥️ Model: <strong>TRS-80 Model 100/102</strong>';
+        }
+
+        const widthPill = document.getElementById('netWidthPill');
+        if (widthPill) {
+          widthPill.innerHTML = (w === 80)
+            ? '↔️ Width: <strong>80-Col (Ultrascreen)</strong>'
+            : '↔️ Width: <strong>40-Col (Standard LCD)</strong>';
+        }
+
+        document.getElementById('btnWidth40').classList.toggle('active', w === 40);
+        document.getElementById('btnWidth80').classList.toggle('active', w === 80);
+
+        this.renderBbsPresets();
+        this.log(`Handshake received from Model T: Model ${m}, Width ${w} columns.`);
+
+        // Show badge on Tab 3 if not active
+        if (currentTab !== 'net') {
+          const badge = document.getElementById('netBadge');
+          if (badge) badge.classList.add('visible');
+        }
+
+        // Push initial bridge menu to Model T screen
+        this.sendBridgeMenu();
+      }
+
+      onModeReceived(modeName) {
+        this.log(`AirDrive mode changed: ${modeName}`);
+        if (modeName === 'TPDD') {
+          this.bbsService.disconnect();
+          this.textPacer.stopStream();
+        }
+      }
+
+      setUserWidth(w) {
+        this.width = (w === 80) ? 80 : 40;
+        this.textPacer.setWidth(this.width);
+        document.getElementById('btnWidth40').classList.toggle('active', this.width === 40);
+        document.getElementById('btnWidth80').classList.toggle('active', this.width === 80);
+        const widthPill = document.getElementById('netWidthPill');
+        if (widthPill) {
+          widthPill.innerHTML = (this.width === 80)
+            ? '↔️ Width: <strong>80-Col (Ultrascreen)</strong>'
+            : '↔️ Width: <strong>40-Col (Standard LCD)</strong>';
+        }
+        this.renderBbsPresets();
+        this.log(`User set width to ${this.width} columns.`);
+      }
+
+      async saveLocation() {
+        const inp = document.getElementById('netZipInput');
+        const code = inp ? inp.value.trim() : '';
+        if (!code) {
+          alert('Please enter a US ZIP Code or Canadian Postal Code.');
+          return;
+        }
+
+        const badge = document.getElementById('locStatusBadge');
+        if (badge) badge.textContent = 'Resolving location...';
+
+        try {
+          const loc = await this.locationService.resolveLocation(code);
+          this.cachedLocation = loc;
+          localStorage.setItem('airdrive_active_location', JSON.stringify(loc));
+          this.updateLocationDisplay();
+          this.log(`Location saved: ${loc.city}, ${loc.region} (${loc.country}) [${loc.lat.toFixed(2)}, ${loc.lon.toFixed(2)}]`);
+          if (badge) badge.textContent = 'Saved successfully!';
+        } catch (e) {
+          alert(e.message);
+          if (badge) badge.textContent = 'Lookup failed';
+        }
+      }
+
+      updateLocationDisplay() {
+        const disp = document.getElementById('resolvedLocationDisplay');
+        if (disp && this.cachedLocation) {
+          disp.textContent = `📍 ${this.cachedLocation.city}, ${this.cachedLocation.region} (${this.cachedLocation.country})`;
+        }
+      }
+
+      renderBbsPresets() {
+        const label = document.getElementById('bbsWidthLabel');
+        if (label) label.textContent = `${this.width}-Column Presets`;
+
+        const list = document.getElementById('bbsPresetsList');
+        if (!list) return;
+        list.innerHTML = '';
+
+        const presets = this.bbsService.getPresets(this.width);
+        presets.forEach((bbs, idx) => {
+          const div = document.createElement('div');
+          div.className = 'net-bbs-item';
+          div.innerHTML = `
+            <div class="info">
+              <span class="name">[${idx + 1}] ${bbs.name}</span>
+              <span class="addr">${bbs.host}:${bbs.port}</span>
+              <span class="desc">${bbs.desc}</span>
+            </div>
+            <button class="net-action-btn green" onclick="netBridgeEngine.dialBbs('${bbs.host}', ${bbs.port})">Dial</button>
+          `;
+          list.appendChild(div);
+        });
+      }
+
+      async sendBridgeMenu() {
+        const w = (this.width === 80) ? 79 : 39;
+        const div = "=".repeat(w);
+        const sub = "-".repeat(w);
+
+        let lines = [];
+        lines.push("\x0C" + div);
+        lines.push("     PORTA MT: INTERNET BRIDGE");
+        lines.push(div);
+        lines.push("[1] Current Local Weather");
+        lines.push("[2] 3-Day Weather Forecast");
+        lines.push("[3] Local News Headlines");
+        lines.push("[4] Top World & Tech News");
+        lines.push("[5] BBS Speed Dial Directory");
+        lines.push("[6] Dial Custom BBS (ATDT host:port)");
+        lines.push("[M] Repaint This Menu");
+        lines.push("[F8] Exit to AirDrive Menu");
+        lines.push(sub);
+        lines.push("Select [1-6] or type ATDT host:port > ");
+
+        const text = lines.join("\r\n");
+        await this.textPacer.sendRaw(text);
+        this.log('Sent Bridge Main Menu to Model T screen.');
+      }
+
+      async fetchAndSendWeather(isExtended = false) {
+        if (!this.cachedLocation) {
+          alert('Please enter and save your Postal or ZIP Code first.');
+          return;
+        }
+        this.log(`Fetching weather for ${this.cachedLocation.city}...`);
+        try {
+          const forecast = await this.weatherService.fetchForecast(
+            this.cachedLocation.lat,
+            this.cachedLocation.lon,
+            this.cachedLocation.country
+          );
+          const formatted = this.weatherService.formatWeather(this.cachedLocation, forecast, this.width, isExtended);
+          this.textPacer.paginateAndSend(formatted, this.width);
+          this.log('Weather delivered to Model T screen.');
+        } catch (e) {
+          this.log(`Weather error: ${e.message}`);
+          await this.textPacer.sendRaw(`\r\nWeather lookup failed: ${e.message}\r\n`);
+        }
+      }
+
+      async fetchAndSendNews(type = 'local') {
+        this.log(`Fetching ${type} news...`);
+        try {
+          let articles = [];
+          let header = "NEWS HEADLINES";
+
+          if (type === 'local') {
+            if (!this.cachedLocation) {
+              alert('Please enter and save your Postal or ZIP Code first.');
+              return;
+            }
+            header = `LOCAL NEWS: ${this.cachedLocation.city.toUpperCase()}`;
+            articles = await this.newsService.fetchGoogleLocalNews(
+              this.cachedLocation.city,
+              this.cachedLocation.region,
+              this.cachedLocation.country
+            );
+          } else {
+            const titles = {
+              cbc_top: "CBC NEWS - TOP STORIES",
+              cbc_tech: "CBC TECHNOLOGY NEWS",
+              npr: "NPR NEWS HEADLINES",
+              cnn: "CNN LITE TOP STORIES"
+            };
+            header = titles[type] || "NEWS FEED";
+            articles = await this.newsService.fetchPreset(type);
+          }
+
+          if (articles.length === 0) throw new Error('No articles returned from feed.');
+          const formatted = this.newsService.formatArticles(header, articles, this.width);
+          this.textPacer.paginateAndSend(formatted, this.width);
+          this.log(`News feed (${type}) delivered to Model T screen.`);
+        } catch (e) {
+          this.log(`News error: ${e.message}`);
+          await this.textPacer.sendRaw(`\r\nNews feed error: ${e.message}\r\n`);
+        }
+      }
+
+      async fetchAndSendHackerNews() {
+        this.log('Fetching Hacker News...');
+        try {
+          const stories = await this.newsService.fetchHackerNews(10);
+          const formatted = this.newsService.formatHackerNews(stories, this.width);
+          this.textPacer.paginateAndSend(formatted, this.width);
+          this.log('Hacker News delivered to Model T screen.');
+        } catch (e) {
+          this.log(`HN error: ${e.message}`);
+          await this.textPacer.sendRaw(`\r\nHacker News error: ${e.message}\r\n`);
+        }
+      }
+
+      dialBbs(host, port) {
+        this.log(`Dialing BBS: ${host}:${port}...`);
+        this.bbsService.connect(host, port);
+      }
+
+      dialCustomBbs() {
+        const inp = document.getElementById('customBbsInput');
+        const str = inp ? inp.value.trim() : '';
+        if (!str) {
+          alert('Please enter host:port (e.g. bbs.fozztexx.com:23)');
+          return;
+        }
+        let host = str;
+        let port = 23;
+        if (str.includes(':')) {
+          const parts = str.split(':');
+          host = parts[0];
+          port = parseInt(parts[1], 10) || 23;
+        }
+        this.dialBbs(host, port);
+      }
+
+      disconnectBbs() {
+        this.bbsService.disconnect();
+        this.textPacer.stopStream();
+        this.sendBridgeMenu();
+      }
+
+      onBbsDataReceived(data) {
+        if (typeof data === 'string') {
+          sendBridgeDataToModelT(new TextEncoder().encode(data));
+        } else if (data instanceof Uint8Array) {
+          sendBridgeDataToModelT(data);
+        }
+      }
+
+      onBbsStatusChange(msg, state) {
+        this.log(`BBS: ${msg}`);
+      }
+
+      // Serial Bytes from Model T (Keys, commands, etc.)
+      onSerialBytesFromModelT(bytes) {
+        // 1. If BBS is connected, pass keystrokes straight to BBS
+        if (this.bbsService.connected) {
+          this.bbsService.send(bytes);
+          return;
+        }
+
+        // 2. If TextPacer is paginating (Space, B, M navigation)
+        if (this.textPacer.isPaginating) {
+          if (this.textPacer.handleModelTInput(bytes)) {
+            return;
+          }
+        }
+
+        // 3. Command buffering for ATDT host:port and single-digit menus
+        const str = new TextDecoder().decode(bytes);
+        this.serialLineBuffer += str;
+
+        // Check for carriage return or enter
+        if (this.serialLineBuffer.includes('\r') || this.serialLineBuffer.includes('\n')) {
+          const line = this.serialLineBuffer.trim();
+          this.serialLineBuffer = '';
+
+          // ATDT dial command
+          const atdtMatch = line.match(/^ATDT\s+([A-Za-z0-9\.\-]+)(?::(\d+))?$/i);
+          if (atdtMatch) {
+            const host = atdtMatch[1];
+            const port = parseInt(atdtMatch[2] || '23', 10);
+            this.dialBbs(host, port);
+            return;
+          }
+
+          // Single menu options
+          if (line === '1') {
+            this.fetchAndSendWeather(false);
+          } else if (line === '2') {
+            this.fetchAndSendWeather(true);
+          } else if (line === '3') {
+            this.fetchAndSendNews('local');
+          } else if (line === '4') {
+            this.fetchAndSendNews('cbc_top');
+          } else if (line === '5') {
+            this.sendBbsSpeedDialMenu();
+          } else if (line === '6') {
+            this.textPacer.sendRaw("\r\nType ATDT host:port (e.g. ATDT bbs.fozztexx.com:23) > ");
+          } else if (line.toUpperCase() === 'M' || line === '?') {
+            this.sendBridgeMenu();
+          }
+          return;
+        }
+
+        // Immediate single-key responses when idle
+        if (this.serialLineBuffer.length === 1 && !this.serialLineBuffer.startsWith('A')) {
+          const ch = this.serialLineBuffer;
+          this.serialLineBuffer = '';
+          if (ch === '1') this.fetchAndSendWeather(false);
+          else if (ch === '2') this.fetchAndSendWeather(true);
+          else if (ch === '3') this.fetchAndSendNews('local');
+          else if (ch === '4') this.fetchAndSendNews('cbc_top');
+          else if (ch === '5') this.sendBbsSpeedDialMenu();
+          else if (ch === 'M' || ch === 'm') this.sendBridgeMenu();
+        }
+      }
+
+      async sendBbsSpeedDialMenu() {
+        const presets = this.bbsService.getPresets(this.width);
+        const w = (this.width === 80) ? 79 : 39;
+        const div = "-".repeat(w);
+
+        let lines = [];
+        lines.push("\x0C" + "BBS SPEED DIAL DIRECTORY (" + this.width + "-COL)");
+        lines.push(div);
+        presets.forEach((b, i) => {
+          lines.push(`[${i + 1}] ${b.name}`);
+          lines.push(`    ${b.host}:${b.port}`);
+        });
+        lines.push(div);
+        lines.push("Select BBS [1-5] or [M]enu > ");
+
+        await this.textPacer.sendRaw(lines.join("\r\n"));
+      }
+
+      toggleProxySettings() {
+        const body = document.getElementById('proxySettingsBody');
+        if (body) {
+          body.style.display = (body.style.display === 'none') ? 'flex' : 'none';
+        }
+      }
+
+      saveProxySettings() {
+        const ws = document.getElementById('proxyWsInput').value.trim();
+        const cors = document.getElementById('proxyCorsInput').value.trim();
+        localStorage.setItem('airdrive_bbs_proxy_url', ws);
+        localStorage.setItem('airdrive_cors_proxy', cors);
+        alert('Proxy settings saved to localStorage!');
+        this.log('Proxy settings updated.');
+      }
+
+      resetProxyDefaults() {
+        document.getElementById('proxyWsInput').value = 'wss://telnet.retrograde.fun:8080/';
+        document.getElementById('proxyCorsInput').value = 'https://api.allorigins.win/raw?url=';
+        this.saveProxySettings();
+      }
+    }
+
+    window.netBridgeEngine = new NetBridgeEngine();
+
+    // Initialize DviTerminal and NetBridgeEngine when DOM is loaded
     window.addEventListener("DOMContentLoaded", () => {
+      // Check Firmware Update feature flag
+      if (!window.APP_CONFIG || window.APP_CONFIG.enableFirmwareUpdates === false) {
+        const otaBtn = document.getElementById("btnOta");
+        if (otaBtn) otaBtn.style.display = "none";
+        const otaSec = document.getElementById("firmwareUpdateSection");
+        if (otaSec) {
+          otaSec.innerHTML = `
+            <h3>5. Firmware Updates</h3>
+            <p>Firmware update flashing is disabled in the self-hosted offline package. To check or install official firmware updates, visit <a href="https://www.portacoco.com/airdrive.html" target="_blank" style="color: #58a6ff;">portacoco.com</a>.</p>
+          `;
+        }
+      }
+
+      // Initialize NetBridgeEngine
+      if (window.netBridgeEngine) {
+        window.netBridgeEngine.init();
+      }
+
       const cvs = document.getElementById("dviCanvas");
       if (cvs) {
         dviTerminal = new DviTerminal(cvs);
