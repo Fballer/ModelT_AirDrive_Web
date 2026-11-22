@@ -1413,21 +1413,6 @@
         document.getElementById("btnRefresh").style.display = "none";
       }
     }
-      } else if (tabName === "dvi") {
-        document.getElementById("tabBtnDvi").classList.add("active");
-        document.getElementById("tabPaneDvi").classList.add("active");
-        document.getElementById("dviBadge").classList.remove("visible");
-        document.getElementById("btnRefresh").style.display = "none";
-        if (dviTerminal) {
-          dviTerminal.applySizing();
-          dviTerminal.requestRender();
-        }
-      } else if (tabName === "help") {
-        document.getElementById("tabBtnHelp").classList.add("active");
-        document.getElementById("tabPaneHelp").classList.add("active");
-        document.getElementById("btnRefresh").style.display = "none";
-      }
-    }
 
     function toggleCrtFullscreen() {
       const stage = document.getElementById("bezelContainer");
@@ -3415,6 +3400,28 @@
       }
     }
 
+    // --- Helper: Model T ASCII Sanitizer & Degree Converter ---
+    function toModelTAscii(text) {
+      if (!text) return '';
+      return text
+        // Convert all degree symbol variations to single quote / apostrophe (')
+        .replace(/[\u00B0\u00BA]/g, "'")
+        .replace(/&deg;/gi, "'")
+        .replace(/&#176;/g, "'")
+        // Curly single quotes / apostrophes to standard ASCII single quote
+        .replace(/[\u2018\u2019\u201B]/g, "'")
+        // Curly double quotes to standard ASCII double quote
+        .replace(/[\u201C\u201D\u201F]/g, '"')
+        // Em-dash and en-dash to double hyphen
+        .replace(/[\u2013\u2014]/g, '--')
+        // Ellipsis to three dots
+        .replace(/\u2026/g, '...')
+        // Bullet points
+        .replace(/[\u2022\u25CF\u00B7]/g, '*')
+        // Strip any remaining non-ASCII glyphs (>127) to avoid LCD hardware glitches
+        .replace(/[^\x00-\x7F]/g, '');
+    }
+
     // --- 2. WeatherService (Open-Meteo Forecast & WMO Formatting) ---
     class WeatherService {
       constructor() {
@@ -3471,47 +3478,106 @@
       }
 
       formatWeather(loc, forecast, width = 40, isWeekly = false) {
-        const w = (width === 80) ? 79 : 39;
-        const divider = "-".repeat(w);
         const isCA = (loc.country === 'CA');
         const tempSuffix = isCA ? "C" : "F";
         const windSuffix = isCA ? "km/h" : "mph";
 
         const curr = forecast.current || {};
         const condText = this.getWmoText(curr.weather_code);
-        const now = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        const currTemp = Math.round(curr.temperature_2m || 0);
+        const feelTemp = Math.round(curr.apparent_temperature || 0);
+        const humidity = Math.round(curr.relative_humidity_2m || 0);
+        const wind = Math.round(curr.wind_speed_10m || 0);
 
-        let lines = [];
-        lines.push(`WEATHER: ${loc.city.toUpperCase()}, ${loc.region.toUpperCase()} (${loc.country})`);
-        lines.push(`Reported: ${now}`);
-        lines.push(divider);
-        lines.push(`Condition: ${condText}`);
-        lines.push(`Temp: ${Math.round(curr.temperature_2m)}°${tempSuffix}  (Feels like: ${Math.round(curr.apparent_temperature)}°${tempSuffix})`);
-        lines.push(`Humidity: ${curr.relative_humidity_2m}%   Wind: ${Math.round(curr.wind_speed_10m)} ${windSuffix}`);
-        lines.push(divider);
-
-        if (forecast.daily && forecast.daily.time) {
-          lines.push(isWeekly ? "7-DAY OUTLOOK:" : "3-DAY OUTLOOK:");
-          const count = isWeekly ? Math.min(forecast.daily.time.length, 7) : Math.min(forecast.daily.time.length, 3);
-          for (let i = 0; i < count; i++) {
-            const dStr = forecast.daily.time[i];
-            const dt = new Date(dStr + "T00:00:00");
-            const dayName = dt.toLocaleDateString('en-US', { weekday: 'short' });
-            const maxT = Math.round(forecast.daily.temperature_2m_max[i]);
-            const minT = Math.round(forecast.daily.temperature_2m_min[i]);
-            const pop = forecast.daily.precipitation_probability_max ? forecast.daily.precipitation_probability_max[i] : 0;
-            const cDesc = this.getWmoText(forecast.daily.weather_code[i]);
-
-            if (width === 80) {
-              lines.push(`  ${dayName.padEnd(4)}: High ${String(maxT).padStart(3)}° Low ${String(minT).padStart(3)}° Rain: ${String(pop).padStart(2)}% | ${cDesc}`);
-            } else {
-              lines.push(`${dayName}: H:${maxT}° L:${minT}° Rain:${pop}%`);
-              lines.push(`      ${cDesc}`);
+        if (width === 80) {
+          const div = "-".repeat(79);
+          let lines = [];
+          lines.push(`WEATHER: ${loc.city.toUpperCase()}, ${loc.region.toUpperCase()} (${loc.country})`.slice(0, 79));
+          lines.push(div);
+          lines.push(`Conditions: ${condText} | Temp: ${currTemp}'${tempSuffix} (Feels ${feelTemp}'${tempSuffix}) | Humidity: ${humidity}% | Wind: ${wind} ${windSuffix}`.slice(0, 79));
+          lines.push(div);
+          if (forecast.daily && forecast.daily.time) {
+            const count = Math.min(forecast.daily.time.length, 7);
+            for (let i = 0; i < count; i++) {
+              const dt = new Date(forecast.daily.time[i] + "T00:00:00");
+              const dayName = dt.toLocaleDateString('en-US', { weekday: 'short' });
+              const maxT = Math.round(forecast.daily.temperature_2m_max[i]);
+              const minT = Math.round(forecast.daily.temperature_2m_min[i]);
+              const pop = forecast.daily.precipitation_probability_max ? forecast.daily.precipitation_probability_max[i] : 0;
+              const cDesc = this.getWmoText(forecast.daily.weather_code[i]);
+              lines.push(`  ${dayName.padEnd(4)}: High ${String(maxT).padStart(3)}'${tempSuffix}  Low ${String(minT).padStart(3)}'${tempSuffix}  Rain: ${String(pop).padStart(2)}% | ${cDesc}`.slice(0, 79));
             }
           }
-          lines.push(divider);
+          return lines.join("\r\n");
         }
-        return lines.join("\r\n") + "\r\n";
+
+        // 40-Column Display: Strictly formatted 7 lines per page (so line 8 is the footer)
+        if (!isWeekly) {
+          // Single 8-line screen: Current Conditions + 3-Day Forecast
+          let lines = [];
+          lines.push(`WEATHER: ${loc.city.toUpperCase()}, ${loc.region.toUpperCase()} (${loc.country})`.slice(0, 39));
+          lines.push(`Now: ${condText}, ${currTemp}'${tempSuffix} (Feels ${feelTemp}'${tempSuffix})`.slice(0, 39));
+          lines.push(`Humidity: ${humidity}%  Wind: ${wind} ${windSuffix}`.slice(0, 39));
+          lines.push("---------------------------------------");
+
+          const times = (forecast.daily && forecast.daily.time) ? forecast.daily.time : [];
+          for (let i = 0; i < 3; i++) {
+            if (i < times.length) {
+              const dt = new Date(times[i] + "T00:00:00");
+              const dayName = (i === 0) ? "Today" : dt.toLocaleDateString('en-US', { weekday: 'short' });
+              const maxT = Math.round(forecast.daily.temperature_2m_max[i]);
+              const minT = Math.round(forecast.daily.temperature_2m_min[i]);
+              const pop = forecast.daily.precipitation_probability_max ? forecast.daily.precipitation_probability_max[i] : 0;
+              const cDesc = this.getWmoText(forecast.daily.weather_code[i]);
+              lines.push(`${dayName.padEnd(5)}: H:${maxT}'${tempSuffix} L:${minT}'${tempSuffix} ${pop}% ${cDesc}`.slice(0, 39));
+            } else {
+              lines.push("");
+            }
+          }
+          return lines.join("\r\n");
+        } else {
+          // 7-Day Extended Forecast: 2 pages of 7 content lines each
+          let lines = [];
+          const times = (forecast.daily && forecast.daily.time) ? forecast.daily.time : [];
+
+          // Page 1: Days 1 to 4
+          lines.push(`7-DAY WEATHER: ${loc.city.toUpperCase()} (1/2)`.slice(0, 39));
+          lines.push(`Now: ${condText}, ${currTemp}'${tempSuffix}`.slice(0, 39));
+          lines.push("---------------------------------------");
+          for (let i = 0; i < 4; i++) {
+            if (i < times.length) {
+              const dt = new Date(times[i] + "T00:00:00");
+              const dayName = (i === 0) ? "Today" : dt.toLocaleDateString('en-US', { weekday: 'short' });
+              const maxT = Math.round(forecast.daily.temperature_2m_max[i]);
+              const minT = Math.round(forecast.daily.temperature_2m_min[i]);
+              const pop = forecast.daily.precipitation_probability_max ? forecast.daily.precipitation_probability_max[i] : 0;
+              const cDesc = this.getWmoText(forecast.daily.weather_code[i]);
+              lines.push(`${dayName.padEnd(5)}: H:${maxT}'${tempSuffix} L:${minT}'${tempSuffix} ${pop}% ${cDesc}`.slice(0, 39));
+            } else {
+              lines.push("");
+            }
+          }
+
+          // Page 2: Days 5 to 7
+          lines.push(`7-DAY WEATHER: ${loc.city.toUpperCase()} (2/2)`.slice(0, 39));
+          lines.push(`Humidity: ${humidity}%  Wind: ${wind} ${windSuffix}`.slice(0, 39));
+          lines.push("---------------------------------------");
+          for (let i = 4; i < 7; i++) {
+            if (i < times.length) {
+              const dt = new Date(times[i] + "T00:00:00");
+              const dayName = dt.toLocaleDateString('en-US', { weekday: 'short' });
+              const maxT = Math.round(forecast.daily.temperature_2m_max[i]);
+              const minT = Math.round(forecast.daily.temperature_2m_min[i]);
+              const pop = forecast.daily.precipitation_probability_max ? forecast.daily.precipitation_probability_max[i] : 0;
+              const cDesc = this.getWmoText(forecast.daily.weather_code[i]);
+              lines.push(`${dayName.padEnd(5)}: H:${maxT}'${tempSuffix} L:${minT}'${tempSuffix} ${pop}% ${cDesc}`.slice(0, 39));
+            } else {
+              lines.push("");
+            }
+          }
+          lines.push("---------------------------------------");
+          return lines.join("\r\n");
+        }
       }
     }
 
@@ -3527,7 +3593,7 @@
 
       stripHtml(html) {
         if (!html) return '';
-        return html
+        return toModelTAscii(html
           .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
           .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
           .replace(/<[^>]+>/g, ' ')
@@ -3545,21 +3611,38 @@
           .replace(/[\u201C\u201D]/g, '"')
           .replace(/[\u2013\u2014]/g, '--')
           .replace(/\s+/g, ' ')
-          .trim();
+          .trim());
       }
 
       async fetchXml(url) {
-        const proxy = this.getCorsProxy().trim();
-        const finalUrl = proxy ? `${proxy}${encodeURIComponent(url)}` : url;
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 7000);
-        const res = await fetch(finalUrl, { signal: controller.signal });
-        clearTimeout(timeoutId);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const text = await res.text();
-        const parser = new DOMParser();
-        const xml = parser.parseFromString(text, 'text/xml');
-        return xml;
+        const proxies = [
+          this.getCorsProxy().trim(),
+          'https://api.allorigins.win/raw?url=',
+          'https://corsproxy.io/?url=',
+          'https://api.codetabs.com/v1/proxy?quest='
+        ];
+        const uniqueProxies = [...new Set(proxies.filter(p => p.length > 0))];
+
+        let lastError = null;
+        for (const proxy of uniqueProxies) {
+          try {
+            const finalUrl = `${proxy}${encodeURIComponent(url)}`;
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 6000);
+            const res = await fetch(finalUrl, { signal: controller.signal });
+            clearTimeout(timeoutId);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const text = await res.text();
+            if (!text || text.trim().length === 0) throw new Error('Empty response');
+            const parser = new DOMParser();
+            const xml = parser.parseFromString(text, 'text/xml');
+            if (xml.querySelector('parsererror')) throw new Error('XML parse error');
+            return xml;
+          } catch (e) {
+            lastError = e;
+          }
+        }
+        throw lastError || new Error('All CORS proxies failed');
       }
 
       async fetchHackerNews(limit = 10) {
@@ -3632,43 +3715,92 @@
       }
 
       formatArticles(title, articles, width = 40) {
-        const w = (width === 80) ? 79 : 39;
-        const divider = "=".repeat(w);
-        const subDivider = "-".repeat(w);
+        if (width === 80) {
+          const div = "=".repeat(79);
+          const sub = "-".repeat(79);
+          let lines = [];
+          lines.push(title.toUpperCase().slice(0, 79));
+          lines.push(div);
+          articles.slice(0, 10).forEach((art, idx) => {
+            lines.push(`[${idx + 1}] ${art.title}`.slice(0, 79));
+            if (art.source) lines.push(`    Source: ${art.source}`.slice(0, 79));
+            if (art.desc && art.desc !== art.title) {
+              lines.push(`    ${art.desc.slice(0, 140)}...`.slice(0, 79));
+            }
+            lines.push(sub);
+          });
+          return lines.join("\r\n");
+        }
 
+        // 40-Column Display: exactly 7 content lines per page (2 articles/page)
+        const count = Math.min(articles.length, 10);
         let lines = [];
-        lines.push(title.toUpperCase());
-        lines.push(divider);
+        for (let i = 0; i < count; i += 2) {
+          const pageNum = Math.floor(i / 2) + 1;
+          const totalPages = Math.ceil(count / 2);
+          const art1 = articles[i];
+          const art2 = (i + 1 < count) ? articles[i + 1] : null;
 
-        articles.forEach((art, idx) => {
-          lines.push(`[${idx + 1}] ${art.title}`);
-          if (art.source) lines.push(`    Source: ${art.source}`);
-          if (art.desc && art.desc !== art.title) {
-            const snippet = art.desc.slice(0, width === 80 ? 140 : 80);
-            lines.push(`    ${snippet}...`);
+          lines.push(`${title.toUpperCase().slice(0, 27)} (${pageNum}/${totalPages})`.slice(0, 39));
+          lines.push(`[${i + 1}] ${art1.title}`.slice(0, 39));
+          lines.push(`    ${(art1.source || art1.desc || '').slice(0, 35)}`);
+          lines.push("---------------------------------------");
+          if (art2) {
+            lines.push(`[${i + 2}] ${art2.title}`.slice(0, 39));
+            lines.push(`    ${(art2.source || art2.desc || '').slice(0, 35)}`);
+          } else {
+            lines.push("");
+            lines.push("");
           }
-          lines.push(subDivider);
-        });
-
-        return lines.join("\r\n") + "\r\n";
+          lines.push("---------------------------------------");
+        }
+        return lines.join("\r\n");
       }
 
       formatHackerNews(stories, width = 40) {
-        const w = (width === 80) ? 79 : 39;
-        const divider = "=".repeat(w);
-        const subDivider = "-".repeat(w);
+        if (width === 80) {
+          const div = "=".repeat(79);
+          const sub = "-".repeat(79);
+          let lines = [];
+          lines.push("HACKER NEWS - TOP STORIES");
+          lines.push(div);
+          stories.slice(0, 10).forEach((st, idx) => {
+            lines.push(`[${idx + 1}] ${st.title}`.slice(0, 79));
+            lines.push(`    ${st.score} points | ${st.source}`.slice(0, 79));
+            lines.push(sub);
+          });
+          return lines.join("\r\n");
+        }
 
+        // 40-Column Display: exactly 7 content lines per page (3 stories/page)
+        const count = Math.min(stories.length, 9);
         let lines = [];
-        lines.push("HACKER NEWS - TOP STORIES");
-        lines.push(divider);
+        for (let i = 0; i < count; i += 3) {
+          const pageNum = Math.floor(i / 3) + 1;
+          const totalPages = Math.ceil(count / 3);
+          const st1 = stories[i];
+          const st2 = (i + 1 < count) ? stories[i + 1] : null;
+          const st3 = (i + 2 < count) ? stories[i + 2] : null;
 
-        stories.forEach((st, idx) => {
-          lines.push(`[${idx + 1}] ${st.title}`);
-          lines.push(`    ${st.score} points | ${st.source}`);
-          lines.push(subDivider);
-        });
-
-        return lines.join("\r\n") + "\r\n";
+          lines.push(`HACKER NEWS TOP STORIES (${pageNum}/${totalPages})`.slice(0, 39));
+          lines.push(`[${i + 1}] ${st1.title}`.slice(0, 39));
+          lines.push(`    ${st1.score} pts | ${st1.source}`.slice(0, 39));
+          if (st2) {
+            lines.push(`[${i + 2}] ${st2.title}`.slice(0, 39));
+            lines.push(`    ${st2.score} pts | ${st2.source}`.slice(0, 39));
+          } else {
+            lines.push("");
+            lines.push("");
+          }
+          if (st3) {
+            lines.push(`[${i + 3}] ${st3.title}`.slice(0, 39));
+            lines.push(`    ${st3.score} pts | ${st3.source}`.slice(0, 39));
+          } else {
+            lines.push("");
+            lines.push("");
+          }
+        }
+        return lines.join("\r\n");
       }
     }
 
@@ -3828,15 +3960,19 @@
         this.setWidth(width);
 
         const maxCols = (width === 80) ? 79 : 39;
-        const cleanText = (width === 40) ? this.stripAnsi(rawText) : rawText;
+        const cleanText = toModelTAscii(this.stripAnsi(rawText));
         const allLines = this.wrapText(cleanText, maxCols);
 
-        // Screen lines per page: M100 40-col is 6 text lines; M200 is 14 lines; 80-col is 14-16 lines.
-        const linesPerPage = (this.currentModel === '200') ? 14 : ((width === 80) ? 14 : 6);
+        // Screen lines per page: M100 40-col is 7 content lines (+1 footer); M200 is 14 content lines (+1 footer); 80-col is 14 content lines (+1 footer)
+        const linesPerPage = (this.currentModel === '200') ? 14 : ((width === 80) ? 14 : 7);
 
         this.pages = [];
         for (let i = 0; i < allLines.length; i += linesPerPage) {
-          this.pages.push(allLines.slice(i, i + linesPerPage));
+          const slice = allLines.slice(i, i + linesPerPage);
+          while (slice.length < linesPerPage) {
+            slice.push("");
+          }
+          this.pages.push(slice);
         }
 
         this.currentPageIdx = 0;
@@ -3853,11 +3989,14 @@
         const pageLines = this.pages[pageIdx];
         const isLast = (pageIdx === this.pages.length - 1);
 
-        let output = "\x0C" + pageLines.join("\r\n") + "\r\n"; // 0x0C = Form Feed (CLS)
+        // Line 1 begins with Form Feed (\x0C) to clear screen
+        // Lines 1 to 7 end with \r\n
+        // Line 8 (footer) has NO trailing \r\n to prevent LCD scroll
+        let output = "\x0C" + pageLines.join("\r\n") + "\r\n";
         if (!isLast) {
-          output += `-- More (${pageIdx + 1}/${this.pages.length}) [Space]=Next [B]=Back [M]=Menu --\r\n`;
+          output += `--(${pageIdx + 1}/${this.pages.length}) SPACE=Next B=Back M=Menu--`;
         } else {
-          output += `-- End [B]=Back [M]=Menu --\r\n`;
+          output += `--End B=Back M=Menu--`;
         }
 
         this.sendRaw(output);
@@ -3866,14 +4005,16 @@
       async sendRaw(textOrBytes) {
         let bytes;
         if (typeof textOrBytes === 'string') {
-          bytes = new TextEncoder().encode(textOrBytes);
+          const ascii = toModelTAscii(textOrBytes);
+          bytes = new TextEncoder().encode(ascii);
         } else {
           bytes = textOrBytes;
         }
 
-        // Chunk parameters: 40-col: ~70 chars / 50ms; 80-col Ultrascreen: ~35 chars / 60ms
-        const chunkSize = (this.currentWidth === 80) ? 35 : 70;
-        const chunkDelay = (this.currentWidth === 80) ? 60 : 50;
+        // Pacing parameters: 38 byte chunks with 75ms delay
+        // 38 chars * ~2ms/char = 76ms LCD render time on Model 100 8085 CPU
+        const chunkSize = 38;
+        const chunkDelay = 75;
 
         for (let i = 0; i < bytes.length; i += chunkSize) {
           while (this.isPaused) {
@@ -3953,6 +4094,7 @@
         this.width = 40;
         this.serialLineBuffer = '';
         this.cachedLocation = null;
+        this.isInBbsMenu = false;
 
         this.textPacer.onMenuRequested = () => this.sendBridgeMenu();
       }
@@ -4004,6 +4146,7 @@
         }
         this.bbsService.disconnect();
         this.textPacer.stopStream();
+        this.isInBbsMenu = false;
         this.log('AirDrive BLE Disconnected.');
       }
 
@@ -4051,6 +4194,7 @@
         if (modeName === 'TPDD') {
           this.bbsService.disconnect();
           this.textPacer.stopStream();
+          this.isInBbsMenu = false;
         }
       }
 
@@ -4125,24 +4269,31 @@
       }
 
       async sendBridgeMenu() {
-        const w = (this.width === 80) ? 79 : 39;
-        const div = "=".repeat(w);
-        const sub = "-".repeat(w);
+        this.textPacer.stopStream();
+        this.isInBbsMenu = false;
 
         let lines = [];
-        lines.push("\x0C" + div);
-        lines.push("     PORTA MT: INTERNET BRIDGE");
-        lines.push(div);
-        lines.push("[1] Current Local Weather");
-        lines.push("[2] 3-Day Weather Forecast");
-        lines.push("[3] Local News Headlines");
-        lines.push("[4] Top World & Tech News");
-        lines.push("[5] BBS Speed Dial Directory");
-        lines.push("[6] Dial Custom BBS (ATDT host:port)");
-        lines.push("[M] Repaint This Menu");
-        lines.push("[F8] Exit to AirDrive Menu");
-        lines.push(sub);
-        lines.push("Select [1-6] or type ATDT host:port > ");
+        if (this.width === 80) {
+          lines.push("\x0C============================ PORTA MT: INTERNET BRIDGE ============================");
+          lines.push("[1] Weather Current & 3-Day Forecast");
+          lines.push("[2] Extended 7-Day Weather Forecast");
+          lines.push("[3] Local Community News Headlines");
+          lines.push("[4] CBC News & World Headlines");
+          lines.push("[5] Hacker News Top 10 Stories");
+          lines.push("[6] BBS Speed Dial Directory");
+          lines.push("[7] Custom BBS Dial (ATDT host:port)");
+          lines.push("Select [1-7] [M]enu [F8]Exit > ");
+        } else {
+          // Exactly 8 lines, max 39 characters each, line 8 has no \r\n
+          lines.push("\x0C============INTERNET MENU=============="); // 39 chars
+          lines.push("[1] Weather Current & 3-Day Forecast");      // 36 chars
+          lines.push("[2] Extended 7-Day Weather Forecast");       // 35 chars
+          lines.push("[3] Local News Headlines");                  // 24 chars
+          lines.push("[4] CBC News & World Headlines");            // 30 chars
+          lines.push("[5] Hacker News Top 10 Stories");            // 30 chars
+          lines.push("[6] BBS Directory  [7] Custom Dial");        // 34 chars
+          lines.push("Select [1-7] [M]enu [F8]Exit > ");           // 31 chars
+        }
 
         const text = lines.join("\r\n");
         await this.textPacer.sendRaw(text);
@@ -4151,7 +4302,8 @@
 
       async fetchAndSendWeather(isExtended = false) {
         if (!this.cachedLocation) {
-          alert('Please enter and save your Postal or ZIP Code first.');
+          const msg = "Please save Postal/ZIP Code on Web Page first!\r\nPress [M]enu > ";
+          await this.textPacer.sendRaw("\x0C" + msg);
           return;
         }
         this.log(`Fetching weather for ${this.cachedLocation.city}...`);
@@ -4166,7 +4318,7 @@
           this.log('Weather delivered to Model T screen.');
         } catch (e) {
           this.log(`Weather error: ${e.message}`);
-          await this.textPacer.sendRaw(`\r\nWeather lookup failed: ${e.message}\r\n`);
+          await this.textPacer.sendRaw(`\x0CWeather lookup error: ${e.message.slice(0, 30)}\r\nPress [M]enu > `);
         }
       }
 
@@ -4178,7 +4330,8 @@
 
           if (type === 'local') {
             if (!this.cachedLocation) {
-              alert('Please enter and save your Postal or ZIP Code first.');
+              const msg = "Please save Postal/ZIP Code on Web Page first!\r\nPress [M]enu > ";
+              await this.textPacer.sendRaw("\x0C" + msg);
               return;
             }
             header = `LOCAL NEWS: ${this.cachedLocation.city.toUpperCase()}`;
@@ -4198,26 +4351,27 @@
             articles = await this.newsService.fetchPreset(type);
           }
 
-          if (articles.length === 0) throw new Error('No articles returned from feed.');
+          if (!articles || articles.length === 0) throw new Error('No articles returned from feed.');
           const formatted = this.newsService.formatArticles(header, articles, this.width);
           this.textPacer.paginateAndSend(formatted, this.width);
           this.log(`News feed (${type}) delivered to Model T screen.`);
         } catch (e) {
           this.log(`News error: ${e.message}`);
-          await this.textPacer.sendRaw(`\r\nNews feed error: ${e.message}\r\n`);
+          await this.textPacer.sendRaw(`\x0CNews feed error: ${e.message.slice(0, 30)}\r\nPress [M]enu > `);
         }
       }
 
       async fetchAndSendHackerNews() {
         this.log('Fetching Hacker News...');
         try {
-          const stories = await this.newsService.fetchHackerNews(10);
+          const stories = await this.newsService.fetchHackerNews(9);
+          if (!stories || stories.length === 0) throw new Error('No stories returned.');
           const formatted = this.newsService.formatHackerNews(stories, this.width);
           this.textPacer.paginateAndSend(formatted, this.width);
           this.log('Hacker News delivered to Model T screen.');
         } catch (e) {
           this.log(`HN error: ${e.message}`);
-          await this.textPacer.sendRaw(`\r\nHacker News error: ${e.message}\r\n`);
+          await this.textPacer.sendRaw(`\x0CHacker News error: ${e.message.slice(0, 30)}\r\nPress [M]enu > `);
         }
       }
 
@@ -4251,7 +4405,7 @@
 
       onBbsDataReceived(data) {
         if (typeof data === 'string') {
-          sendBridgeDataToModelT(new TextEncoder().encode(data));
+          sendBridgeDataToModelT(new TextEncoder().encode(toModelTAscii(data)));
         } else if (data instanceof Uint8Array) {
           sendBridgeDataToModelT(data);
         }
@@ -4294,7 +4448,22 @@
             return;
           }
 
-          // Single menu options
+          // If in BBS speed dial sub-menu
+          if (this.isInBbsMenu) {
+            const idx = parseInt(line, 10);
+            if (idx >= 1 && idx <= 5) {
+              const presets = this.bbsService.getPresets(this.width);
+              if (presets[idx - 1]) {
+                this.dialBbs(presets[idx - 1].host, presets[idx - 1].port);
+                return;
+              }
+            } else if (line.toUpperCase() === 'M' || line === '?') {
+              this.sendBridgeMenu();
+              return;
+            }
+          }
+
+          // Main menu options
           if (line === '1') {
             this.fetchAndSendWeather(false);
           } else if (line === '2') {
@@ -4304,8 +4473,10 @@
           } else if (line === '4') {
             this.fetchAndSendNews('cbc_top');
           } else if (line === '5') {
-            this.sendBbsSpeedDialMenu();
+            this.fetchAndSendHackerNews();
           } else if (line === '6') {
+            this.sendBbsSpeedDialMenu();
+          } else if (line === '7') {
             this.textPacer.sendRaw("\r\nType ATDT host:port (e.g. ATDT bbs.fozztexx.com:23) > ");
           } else if (line.toUpperCase() === 'M' || line === '?') {
             this.sendBridgeMenu();
@@ -4313,35 +4484,63 @@
           return;
         }
 
-        // Immediate single-key responses when idle
+        // Immediate single-key responses when idle (no Enter needed)
         if (this.serialLineBuffer.length === 1 && !this.serialLineBuffer.startsWith('A')) {
           const ch = this.serialLineBuffer;
           this.serialLineBuffer = '';
-          if (ch === '1') this.fetchAndSendWeather(false);
-          else if (ch === '2') this.fetchAndSendWeather(true);
-          else if (ch === '3') this.fetchAndSendNews('local');
-          else if (ch === '4') this.fetchAndSendNews('cbc_top');
-          else if (ch === '5') this.sendBbsSpeedDialMenu();
-          else if (ch === 'M' || ch === 'm') this.sendBridgeMenu();
+
+          if (this.isInBbsMenu) {
+            const idx = parseInt(ch, 10);
+            if (idx >= 1 && idx <= 5) {
+              const presets = this.bbsService.getPresets(this.width);
+              if (presets[idx - 1]) {
+                this.dialBbs(presets[idx - 1].host, presets[idx - 1].port);
+                return;
+              }
+            } else if (ch.toUpperCase() === 'M' || ch === '?') {
+              this.sendBridgeMenu();
+              return;
+            }
+          } else {
+            if (ch === '1') this.fetchAndSendWeather(false);
+            else if (ch === '2') this.fetchAndSendWeather(true);
+            else if (ch === '3') this.fetchAndSendNews('local');
+            else if (ch === '4') this.fetchAndSendNews('cbc_top');
+            else if (ch === '5') this.fetchAndSendHackerNews();
+            else if (ch === '6') this.sendBbsSpeedDialMenu();
+            else if (ch === '7') this.textPacer.sendRaw("\r\nType ATDT host:port > ");
+            else if (ch.toUpperCase() === 'M' || ch === '?') this.sendBridgeMenu();
+          }
         }
       }
 
       async sendBbsSpeedDialMenu() {
+        this.textPacer.stopStream();
+        this.isInBbsMenu = true;
         const presets = this.bbsService.getPresets(this.width);
-        const w = (this.width === 80) ? 79 : 39;
-        const div = "-".repeat(w);
 
         let lines = [];
-        lines.push("\x0C" + "BBS SPEED DIAL DIRECTORY (" + this.width + "-COL)");
-        lines.push(div);
-        presets.forEach((b, i) => {
-          lines.push(`[${i + 1}] ${b.name}`);
-          lines.push(`    ${b.host}:${b.port}`);
-        });
-        lines.push(div);
-        lines.push("Select BBS [1-5] or [M]enu > ");
+        if (this.width === 80) {
+          lines.push("\x0C======================= BBS SPEED DIAL DIRECTORY (80-COL) =======================");
+          presets.forEach((b, i) => {
+            lines.push(`[${i + 1}] ${b.name.padEnd(28)} ${b.host}:${b.port}`);
+          });
+          lines.push("--------------------------------------------------------------------------------");
+          lines.push("Select BBS [1-5] or [M]enu > ");
+        } else {
+          // Exactly 8 lines, max 39 characters each
+          lines.push("\x0C===========BBS SPEED DIAL=============="); // 39 chars
+          lines.push("[1] Level 29 BBS      (fozztexx.com:23)"); // 39 chars
+          lines.push("[2] The Keep BBS         (thekeep.net)");  // 39 chars
+          lines.push("[3] 300 Baud BBS   (300baud.dynu.net)");   // 37 chars
+          lines.push("[4] Particles! BBS   (dyndns.org:6400)");  // 38 chars
+          lines.push("[5] Amis XE BBS      (amis86.ddns.net)");  // 38 chars
+          lines.push("---------------------------------------"); // 39 chars
+          lines.push("Select BBS [1-5] or [M]enu > ");           // 29 chars
+        }
 
         await this.textPacer.sendRaw(lines.join("\r\n"));
+        this.log('Sent BBS Speed Dial Menu to Model T screen.');
       }
 
       toggleProxySettings() {
